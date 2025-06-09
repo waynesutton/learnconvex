@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+rule:
+  id: avoid-unnecessary-useState-sync
+  description: >
+    Avoid using useState + useEffect to mirror props or reactive data into local state.
+    Instead, use props or Convex query results directly, or useMemo for derived values.
+    Only use useState+useEffect if debouncing, snapshotting, or computing async side effects.
+
+trigger:
+  pattern: |
+    const [${state}, ${setState}] = useState();
+    useEffect(() => {
+      ${setState}(${data});
+    }, [${data}]);
+
+suggestion:
+  title: Avoid syncing reactive data with useEffect
+  replacement: |
+    // If you don't need to transform or debounce, just use `data` directly:
+    return <div>{data}</div>;
+    // If you need derived state, useMemo is safer and avoids sync issues:
+    const derived = useMemo(() => transform(data), [data]);
+    return <div>{derived}</div>;
+
+    // Only use useEffect if you need snapshot-like behavior:
+    const [visibleData, setVisibleData] = useState(data);
+
+    useEffect(() => {
+      if (shouldUpdate(data)) {
+        setVisibleData(data);
+      }
+    }, [data]);
+
+  references:
+    - https://react.dev/learn/synchronizing-with-effects
+    - https://docs.convex.dev/using/data-fetching#react-hooks
+    - https://react.dev/learn/you-might-not-need-an-effect
+
+severity: warning
