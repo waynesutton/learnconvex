@@ -66,6 +66,7 @@ This document provides a comprehensive overview of all the files in the Convex L
   - Session management and progress tracking
   - Celebration animations and gamification
   - Completion page with course summary
+  - Branded thinking indicator with spinning Convex favicon
 
 ### `src/AppRouter.tsx`
 

@@ -8,8 +8,7 @@ This is an AI-powered educational platform that teaches Convex.dev through inter
 
 ### 🎯 Two Learning Tracks
 
-1. **"How Convex Works"** - Conceptual understanding of Convex fundamentals (10 questions)
-2. **"Build Apps"** - Practical development skills and workflows (15 questions)
+1. **"Build Apps"** - Practical development skills and workflows
 
 ### 🤖 AI-Powered Learning
 
@@ -25,6 +24,7 @@ This is an AI-powered educational platform that teaches Convex.dev through inter
 - Celebration animations with confetti effects
 - Achievement badges for progress milestones
 - Engaging UI with modern black and white design
+- Branded thinking indicator with spinning Convex favicon
 
 ### 🔑 Key Features
 
@@ -86,8 +86,6 @@ convexcourse/
 ├── tsconfig.node.json      # TypeScript config for Node.js
 └── vite.config.ts          # Vite bundler configuration
 ```
-
-This project is connected to the Convex deployment named [`benevolent-ibex-793`](https://dashboard.convex.dev/d/benevolent-ibex-793).
 
 ## Getting Started
 
@@ -190,4 +188,5 @@ User-defined HTTP routes are defined in the `convex/router.ts` file. We split th
 ## Contributing
 
 This is a learning platform designed to teach Convex.dev concepts. Feel free to extend the courses, add new learning tracks, or improve the user experience.
+
 # learnconvex

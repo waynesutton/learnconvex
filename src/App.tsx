@@ -198,6 +198,14 @@ export default function App() {
     window.location.reload();
   };
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
   // Monitor question progress for celebrations
   useEffect(() => {
     if (session && session.currentQuestion > previousQuestionRef.current) {
@@ -460,6 +468,66 @@ export default function App() {
                             Start Cards
                           </span>
                         </button>
+                      </div>
+                    </div>
+
+                    {/* The backend for AI section */}
+                    <div className="mt-8 sm:mt-8 pt-8 sm:pt-8 border-t border-[#EEEEEE] text-center">
+                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                        The backend for AI
+                      </h2>
+                      <p className="text-base sm:text-lg text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto">
+                        Convex is the open-source reactive database for app developers.
+                      </p>
+
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                        <a
+                          href="https://convex.dev"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="from-33% group z-10 inline-flex rounded-full bg-gradient-to-br from-plum-p4 via-red-r3 via-90% to-yellow-y3 to-100% p-0.5 shadow-[0_2px_14px_rgba(111,0,255,0.25)] transition-shadow hover:shadow-[rgba(111,0,255,0.5)]">
+                          <span className="px-4 md:px-6 py-3 bg-black text-white rounded-full ring-2 ring-[#B72C57] text-sm md:text-base">
+                            Start building
+                          </span>
+                        </a>
+
+                        <span className="text-gray-500 text-sm">or</span>
+
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center bg-white border border-[#EEEEEE] rounded-lg px-3 py-2">
+                            <img src="/right.svg" alt=">" className="h-4 w-auto mr-2" />
+                            <span className="text-sm font-mono">
+                              <span className="text-black">npm</span>{" "}
+                              <span className="text-red-600">create convex</span>
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard("npm create convex")}
+                              className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
+                              title="Copy to clipboard">
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="text-gray-500">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                              </svg>
+                            </button>
+                          </div>
+
+                          <a
+                            href="https://chef.convex.dev"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 text-white hover:opacity-90 transition-opacity text-sm flex items-center gap-2"
+                            style={{ backgroundColor: "#38383A", borderRadius: "20px" }}>
+                            Try Convex with
+                            <img src="/chef.svg" alt="Chef" className="h-6 w-auto" />
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>

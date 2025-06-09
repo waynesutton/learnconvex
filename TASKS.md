@@ -55,6 +55,7 @@ Interactive learning platform for Convex backend development with AI-powered cou
 - [ ] Create certificate generation for completed courses
 - [ ] Add social features (sharing progress, leaderboards)
 - [ ] Implement course feedback and rating system
+- [ ] Add "How Convex Works" - Conceptual understanding of Convex fundamentals section
 
 ## Implementation Plan
 
