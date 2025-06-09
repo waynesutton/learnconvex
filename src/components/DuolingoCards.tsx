@@ -143,7 +143,7 @@ export function Cards({ sessionId }: CardsProps) {
       {/* Progress Bar */}
       <div className="w-full bg-gray-200 rounded-full h-3 mb-6 sm:mb-8">
         <div
-          className="bg-gradient-to-r from-green-50 to-green-600 h-3 rounded-full transition-all duration-300"
+          className="bg-gradient-to-r from-amber-50 to-amber-400 h-3 rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -253,7 +253,7 @@ export function Cards({ sessionId }: CardsProps) {
                             )}
                             <button
                               onClick={nextCard}
-                              className="flex-1 py-3 bg-gradient-to-r from-slate-950 to-gray-900 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-600 transition-colors text-sm sm:text-base">
+                              className="flex-1 py-3 bg-gradient-to-r from-slate-800 to-slate-800 text-white rounded-lg font-semibold hover:from-slate-950 hover:to-slate-950 transition-colors text-sm sm:text-base">
                               {currentCardIndex < cardQuestions.length - 1 ? "Next" : "Complete"}
                             </button>
                           </div>

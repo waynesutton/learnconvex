@@ -268,7 +268,10 @@ export default function App() {
         <header className="bg-convex-cream px-4 py-3 pt-8">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div>
-              <a href="https://convex.dev" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://convex.dev?utm_source=learnconvexdemoapp"
+                target="_blank"
+                rel="noopener noreferrer">
                 <img src="/convex-black.svg" alt="Convex" className="h-5" />
               </a>
             </div>
@@ -318,7 +321,7 @@ export default function App() {
               </button>
               <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm">
                 <a
-                  href="https://convex.dev/docs"
+                  href="https://convex.dev/docs?utm_source=learnconvexdemoapp"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-convex-red hover:underline">
@@ -341,14 +344,14 @@ export default function App() {
           <div className="max-w-4xl mx-auto flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center space-x-4">
               <a
-                href="https://convex.dev"
+                href="https://https://convex.dev/?utm_source=learnconvexdemoapp"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-convex-red transition-colors">
                 Powered by Convex
               </a>
               <a
-                href="https://docs.convex.dev"
+                href="https://docs.convex.dev?utm_source=learnconvexdemoapp"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-convex-red transition-colors">
@@ -359,7 +362,7 @@ export default function App() {
               </a>
             </div>
             <a
-              href="https://chef.convex.dev/"
+              href="https://chef.convex.dev/?utm_source=learnconvexdemoapp"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-convex-red transition-colors">
@@ -374,18 +377,24 @@ export default function App() {
   return (
     <div className="min-h-screen bg-convex-cream flex flex-col">
       {/* Header */}
-      <header className="bg-convex-cream px-4 py-3 pt-8">
+      <header className="bg-convex-cream px-4 py-2 pt-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           {showInitialQuestions ? (
             <div className="flex-1 flex justify-center">
-              <a href="https://convex.dev" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://convex.dev?utm_source=learnconvexdemoapp"
+                target="_blank"
+                rel="noopener noreferrer">
                 <img src="/convex-black.svg" alt="Convex" className="h-4" />
               </a>
             </div>
           ) : (
             <>
               <div>
-                <a href="https://convex.dev" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://convex.dev?utm_source=learnconvexdemoapp"
+                  target="_blank"
+                  rel="noopener noreferrer">
                   <img src="/convex-black.svg" alt="Convex" className="h-4" />
                 </a>
                 {/* <p className="text-sm text-gray-600">The backend for AI</p> */}
@@ -414,11 +423,11 @@ export default function App() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {showInitialQuestions ? (
                 <div className="space-y-6 -mt-2">
-                  <div className="bg-convex-cream rounded-lg p-6 sm:p-8">
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 text-center">
+                  <div className="bg-convex-cream rounded-lg p-4 sm:p-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3 text-center">
                       Welcome to Learn Convex!
                     </h2>
-                    <p className="text-gray-700 mb-8 sm:mb-12 text-center text-base sm:text-lg leading-relaxed">
+                    <p className="text-gray-700 mb-6 sm:mb-8 text-center text-base sm:text-lg leading-relaxed">
                       Choose your learning mode to get started with Convex, the backend for AI.
                     </p>
 
@@ -459,7 +468,7 @@ export default function App() {
                           Cards Mode
                         </div>
                         <div className="text-sm text-gray-600 leading-relaxed mb-6">
-                          Duolingo-style flashcard learning
+                          Card-style flashcard learning
                         </div>
                         <button
                           onClick={() => handleCourseSelection("build-apps-cards")}
@@ -473,16 +482,16 @@ export default function App() {
 
                     {/* The backend for AI section */}
                     <div className="mt-8 sm:mt-8 pt-8 sm:pt-8 border-t border-[#EEEEEE] text-center">
-                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                      <h2 className="text-2xl sm:text-normal font-bold text-gray-900 mb-4">
                         The backend for AI
                       </h2>
-                      <p className="text-base sm:text-lg text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto">
+                      <p className="text-gray-700 sm:text-md text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto">
                         Convex is the open-source reactive database for app developers.
                       </p>
 
                       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
                         <a
-                          href="https://convex.dev"
+                          href="https://convex.dev/?utm_source=learnconvexdemoapp"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="from-33% group z-10 inline-flex rounded-full bg-gradient-to-br from-plum-p4 via-red-r3 via-90% to-yellow-y3 to-100% p-0.5 shadow-[0_2px_14px_rgba(111,0,255,0.25)] transition-shadow hover:shadow-[rgba(111,0,255,0.5)]">
@@ -519,7 +528,7 @@ export default function App() {
                           </div>
 
                           <a
-                            href="https://chef.convex.dev"
+                            href="https://chef.convex.dev?utm_source=learnconvexdemoapp"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-4 py-2 text-white hover:opacity-90 transition-opacity text-sm flex items-center gap-2"
@@ -635,18 +644,18 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="bg-convex-cream px-4 py-3">
+      <footer className="bg-convex-cream px-4 py-2">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-gray-500 space-y-2 sm:space-y-0">
           <div className="flex items-center space-x-4">
             <a
-              href="https://convex.dev"
+              href="https://convex.dev/?utm_source=learnconvexdemoapp"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-convex-red transition-colors">
               Powered by Convex
             </a>
             <a
-              href="https://docs.convex.dev"
+              href="https://docs.convex.dev?utm_source=learnconvexdemoapp"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-convex-red transition-colors">
@@ -657,7 +666,7 @@ export default function App() {
             </a>
           </div>
           <a
-            href="https://chef.convex.dev/"
+            href="https://chef.convex.dev/?utm_source=learnconvexdemoapp"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-convex-red transition-colors">
