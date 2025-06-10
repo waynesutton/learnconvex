@@ -468,7 +468,7 @@ export default function App() {
                           Cards Mode
                         </div>
                         <div className="text-sm text-gray-600 leading-relaxed mb-6">
-                          Card-style flashcard learning
+                          Flashcard Q&A learning
                         </div>
                         <button
                           onClick={() => handleCourseSelection("build-apps-cards")}
