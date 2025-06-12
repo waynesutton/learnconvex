@@ -15,14 +15,14 @@ This app is **fully type-safe** and **deployment-ready** for Vercel with:
 
 ## What This App Is About
 
-This is an AI-powered educational platform that teaches Convex.dev through interactive courses. The app features:
+This is an intelligent educational platform that teaches Convex.dev through interactive courses powered by advanced AI technology. The app features:
 
-### 🎯 Two Learning Tracks
+### 🎯 Two Learning Modes
 
-1. **"How Convex Works"** - Conceptual understanding of Convex fundamentals (10 questions)
+1. **"How Convex Works"** - Conceptual understanding of Convex fundamentals and architecture (10 questions)
 2. **"Build Apps"** - Practical development skills and workflows (7 questions)
 
-### 🤖 AI-Powered Learning
+### 🤖 Smart AI Learning
 
 - Interactive AI instructor that adapts to your learning pace
 - Real-time feedback and scoring system
