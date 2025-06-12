@@ -69,15 +69,19 @@ export function Cards({ sessionId }: CardsProps) {
     setIsCorrect(correct);
     setShowAnswer(true);
 
+    // Award points for any attempt - full points for correct, partial for incorrect
+    const pointsPerQuestion = Math.floor(100 / cardQuestions.length);
+    const scoreToAdd = correct ? pointsPerQuestion : Math.floor(pointsPerQuestion * 0.5); // Half points for trying
+
+    updateSession({
+      sessionId,
+      currentQuestion: currentCardIndex + 1,
+      score: Math.min((session?.score || 0) + scoreToAdd, 100),
+      lastActionWasSkip: false,
+    });
+
     if (correct) {
       triggerConfetti();
-      // Update score and mark as not a skip
-      updateSession({
-        sessionId,
-        currentQuestion: currentCardIndex + 1,
-        score: Math.min((session?.score || 0) + Math.floor(100 / cardQuestions.length), 100),
-        lastActionWasSkip: false,
-      });
     }
   };
 

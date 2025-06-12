@@ -27,8 +27,13 @@ export const getOverallStats = query({
   handler: async (ctx) => {
     const allSessions = await ctx.db.query("sessions").collect();
 
-    const completedSessions = allSessions.filter((session) => session.isCompleted);
-    const totalSessionsStarted = allSessions.length;
+    // Filter out sessions that were never actually used (no messages and currentQuestion = 0)
+    const activeSessions = allSessions.filter(
+      (session) => session.currentQuestion > 0 || session.messages.length > 0 || session.courseType
+    );
+
+    const completedSessions = activeSessions.filter((session) => session.isCompleted);
+    const totalSessionsStarted = activeSessions.length;
     const totalSessionsCompleted = completedSessions.length;
 
     // Calculate average score
@@ -76,7 +81,7 @@ export const getOverallStats = query({
       totalSessionsStarted > 0 ? (totalSessionsCompleted / totalSessionsStarted) * 100 : 0;
 
     // Count skipped questions (sessions where lastActionWasSkip is true)
-    const totalSkippedQuestions = allSessions.filter((s) => s.lastActionWasSkip).length;
+    const totalSkippedQuestions = activeSessions.filter((s) => s.lastActionWasSkip).length;
 
     // Estimate correct/incorrect answers based on score distribution
     // Assuming each question is worth roughly 10 points on average
@@ -178,3 +183,5 @@ export const getScoreDistribution = query({
     ];
   },
 });
+
+// Debug function removed - issues identified and resolved

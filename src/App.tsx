@@ -43,9 +43,7 @@ export default function App() {
   const updateSession = useMutation(api.course.updateSession);
   const generateResponse = useAction(api.course.generateResponse);
 
-  useEffect(() => {
-    createSession({ sessionId });
-  }, [createSession, sessionId]);
+  // Don't create session immediately - only create when user actually starts a course
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -101,14 +99,14 @@ export default function App() {
   const handleCourseSelection = async (courseType: string) => {
     setShowInitialQuestions(false);
 
+    // Create session only when user actually selects a course
+    await createSession({ sessionId, courseType });
+
     // Check if it's the cards mode
     if (courseType === "build-apps-cards") {
       setShowCardsMode(true);
-      await updateSession({ sessionId, courseType });
       return;
     }
-
-    await updateSession({ sessionId, courseType });
 
     const welcomeMessage =
       courseType === "how-convex-works"

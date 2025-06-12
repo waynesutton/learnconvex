@@ -64,6 +64,8 @@ export function Stats() {
 
       {/* Main Content */}
       <div className="flex-1 max-w-6xl mx-auto w-full p-4 space-y-6">
+        {/* Debug information removed - issues identified and fixed */}
+
         {/* Overview Stats Grid - Always show basic stats from real-time database */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-lg p-6 border border-gray-200">
@@ -346,6 +348,13 @@ export function Stats() {
               rel="noopener noreferrer"
               className="hover:text-convex-red transition-colors">
               Docs
+            </a>
+            <a
+              href="https://github.com/waynesutton/learnconvex"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-convex-red transition-colors">
+              Repo
             </a>
           </div>
           <a
