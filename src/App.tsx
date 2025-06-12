@@ -326,6 +326,13 @@ export default function App() {
                   Read the Docs
                 </a>
                 <a
+                  href="https://github.com/waynesutton/learnconvex"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-convex-red hover:underline">
+                  Repo
+                </a>
+                <a
                   href="https://convex.dev/community"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -354,6 +361,13 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="hover:text-convex-red transition-colors">
                 Docs
+              </a>
+              <a
+                href="https://github.com/waynesutton/learnconvex"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-convex-red transition-colors">
+                Repo
               </a>
               <a href="/stats" className="hover:text-convex-red transition-colors">
                 Stats
@@ -658,6 +672,13 @@ export default function App() {
               rel="noopener noreferrer"
               className="hover:text-convex-red transition-colors">
               Docs
+            </a>
+            <a
+              href="https://github.com/waynesutton/learnconvex"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-convex-red transition-colors">
+              Repo
             </a>
             <a href="/stats" className="hover:text-convex-red transition-colors">
               Stats
