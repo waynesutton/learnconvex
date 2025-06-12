@@ -24,6 +24,7 @@ export const createSession = mutation({
     sessionId: v.string(),
     courseType: v.optional(v.string()),
   },
+  returns: v.id("sessions"),
   handler: async (ctx, args) => {
     const existingSession = await ctx.db
       .query("sessions")
@@ -60,6 +61,28 @@ export const getSession = query({
   args: {
     sessionId: v.string(),
   },
+  returns: v.union(
+    v.object({
+      _id: v.id("sessions"),
+      _creationTime: v.number(),
+      sessionId: v.string(),
+      currentQuestion: v.number(),
+      totalQuestions: v.optional(v.number()),
+      score: v.number(),
+      messages: v.array(
+        v.object({
+          role: v.string(),
+          content: v.string(),
+          timestamp: v.number(),
+        })
+      ),
+      isCompleted: v.boolean(),
+      courseType: v.optional(v.string()),
+      randomizedQuestionOrder: v.optional(v.array(v.number())),
+      lastActionWasSkip: v.optional(v.boolean()),
+    }),
+    v.null()
+  ),
   handler: async (ctx, args) => {
     return await ctx.db
       .query("sessions")
@@ -74,6 +97,7 @@ export const addMessage = mutation({
     role: v.string(),
     content: v.string(),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const session = await ctx.db
       .query("sessions")
@@ -106,6 +130,7 @@ export const updateSession = mutation({
     isCompleted: v.optional(v.boolean()),
     lastActionWasSkip: v.optional(v.boolean()),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const session = await ctx.db
       .query("sessions")
@@ -364,6 +389,7 @@ export const generateResponse = action({
     sessionId: v.string(),
     userMessage: v.string(),
   },
+  returns: v.string(),
   handler: async (ctx, args): Promise<string> => {
     const session = await ctx.runQuery(api.course.getSession, {
       sessionId: args.sessionId,

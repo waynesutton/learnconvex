@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npx convex deploy --cmd 'npm run build'",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "outputDirectory": "dist"
+}

@@ -46,16 +46,20 @@ Interactive learning platform for Convex backend development with AI-powered cou
 ## Future Tasks
 
 - [ ] Add more course types/modules
-- [ ] Implement user authentication with Clerk
-- [ ] Add course progress persistence across sessions
+- [ ] Add Convex Agent https://www.convex.dev/components/agent
+- [ ] Add Convex workflow https://www.convex.dev/components/workflow
 - [ ] Create admin dashboard for course management
 - [ ] Add course analytics and learning insights
 - [ ] Implement difficulty levels for courses
-- [ ] Add interactive code examples that users can run
 - [ ] Create certificate generation for completed courses
 - [ ] Add social features (sharing progress, leaderboards)
 - [ ] Implement course feedback and rating system
-- [ ] Add "How Convex Works" - Conceptual understanding of Convex fundamentals section
+
+## TBD Task
+
+- [ ] Add interactive code examples that users can run
+- [ ] Implement user authentication with Clerk
+- [ ] Add "How Convex Works" - Conceptual understanding of Convex fundamentals
 
 ## Implementation Plan
 
