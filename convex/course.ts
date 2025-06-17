@@ -253,7 +253,6 @@ CURRENT STATUS: Course completed or question not available.
 
 COURSE PROGRESS:
 - Current question: ${session.currentQuestion + 1}/${session.totalQuestions}
-- Current score: ${session.score}/${COURSE_SETTINGS["how-convex-works"].maxScore}
 
 ${questionContext}
 
@@ -277,7 +276,7 @@ KEY CONCEPTS TO TEACH:
 7. Real-time: All queries are automatically live-updating
 
 TEACHING APPROACH:
-- Ask the specific question provided above in bold format
+- Ask the specific question provided above using the EXACT bold format shown in the CURRENT QUESTION TO ASK section
 - Focus on conceptual understanding related to the question topics
 - Use analogies and examples relevant to the question
 - After user responds, check if their answer includes the expected answer concepts
@@ -286,7 +285,7 @@ TEACHING APPROACH:
 - Use markdown code blocks with proper language tags (javascript, typescript, bash, etc.)
 - After each user response, increment their score based on understanding (0-10 points per question)
 - Move to next question after user demonstrates understanding
-- ALWAYS format questions in bold using **Question text here?** markdown syntax
+- CRITICAL: When asking questions, you MUST use the exact bold markdown format: **Question text here?**
 
 RANDOMIZED LEARNING PATH:
 Questions are presented in a randomized order for each session to ensure varied learning experiences. Each user gets a unique question sequence while covering the same core Convex concepts.
@@ -323,7 +322,6 @@ CURRENT STATUS: Course completed or question not available.
 
 COURSE PROGRESS:
 - Current question: ${session.currentQuestion + 1}/${session.totalQuestions}
-- Current score: ${session.score}/${COURSE_SETTINGS["build-apps"].maxScore}
 
 ${questionContext}
 
@@ -353,7 +351,7 @@ BEST PRACTICES:
 - Handle errors gracefully
 
 TEACHING APPROACH:
-- Ask the specific question provided above in bold format
+- Ask the specific question provided above using the EXACT bold format shown in the CURRENT QUESTION TO ASK section
 - Provide practical, actionable examples related to the question topics
 - Show complete, working code snippets
 - After user responds, check if their answer includes the expected answer concepts
@@ -365,7 +363,7 @@ TEACHING APPROACH:
 - Show file structure and organization
 - After each user response, increment their score based on understanding (0-7 points per question)
 - Move to next question after user demonstrates understanding
-- ALWAYS format questions in bold using **Question text here?** markdown syntax
+- CRITICAL: When asking questions, you MUST use the exact bold markdown format: **Question text here?**
 
 RANDOMIZED LEARNING PATH:
 Questions are presented in a randomized order for each session to ensure varied learning experiences. Each user gets a unique question sequence while covering the same practical Convex development skills.

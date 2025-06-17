@@ -41,7 +41,7 @@ const renderMarkdownText = (text: string): React.ReactNode => {
 
     // Handle bold text
     let processedLine = line;
-    const boldRegex = /\*\*\*(.*?)\*\*\*/g;
+    const boldRegex = /\*\*(.*?)\*\*/g;
     const boldMatches = [...line.matchAll(boldRegex)];
 
     if (boldMatches.length > 0) {
