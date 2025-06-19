@@ -74,6 +74,48 @@ app.use(workflow);
 export default app;
 ```
 
+### **No Authentication Required**
+
+The AgentFlow implementation works without user authentication by using **session-based identification**, just like your current ConvexCourse app. Instead of requiring users to sign in, we use:
+
+- **Session IDs**: Anonymous session identifiers (e.g., `session_1234567890_abc123`)
+- **Agent Threads**: Tied to sessions instead of authenticated users
+- **Workflows**: Track learning progress by session, not user account
+
+This maintains the current "jump right in" user experience while adding powerful AI capabilities.
+
+### **Session-Based Implementation Pattern**
+
+```typescript
+// Example: Anonymous session-based Agent thread creation
+const createAnonymousThread = async (sessionId: string, courseType: string) => {
+  const { threadId } = await convexLearningAgent.createThread(ctx, {
+    userId: sessionId, // sessionId acts as anonymous user identifier
+    metadata: {
+      isAnonymous: true,
+      courseType,
+      sessionId,
+      createdAt: Date.now(),
+    },
+  });
+  return threadId;
+};
+
+// Example: Anonymous workflow start
+const startAnonymousWorkflow = async (sessionId: string) => {
+  const workflowId = await learningWorkflow.start(
+    ctx,
+    internal.learning.comprehensiveLearningSession,
+    {
+      sessionId, // Using session ID instead of user ID
+      userId: sessionId, // Agent component still needs an identifier
+      isAnonymous: true,
+    }
+  );
+  return workflowId;
+};
+```
+
 Now create the AgentFlow architecture in `convex/agentflow.ts`:
 
 ```typescript
@@ -431,16 +473,17 @@ export const generateResponseWithAgent = action({
       sessionId: args.sessionId,
     });
 
-    // Create or continue thread with Agent
+    // Create or continue thread with Agent (no auth required)
     const { threadId } = session.agentThreadId
       ? await convexLearningAgent.continueThread(ctx, {
           threadId: session.agentThreadId,
         })
       : await convexLearningAgent.createThread(ctx, {
-          userId: session.sessionId, // Using sessionId as userId for demo
+          userId: session.sessionId, // Using sessionId as anonymous identifier
           metadata: {
             courseType: session.courseType,
             currentQuestion: session.currentQuestion,
+            isAnonymous: true, // Flag to indicate no auth required
           },
         });
 
@@ -921,11 +964,11 @@ export default function App() {
       // Create session
       await createSession({ sessionId, courseType });
 
-      // Start AgentFlow workflow for enhanced learning experience
+      // Start AgentFlow workflow for enhanced learning experience (no auth required)
       const workflowResult = await startLearningWorkflow({
         sessionId,
         courseType,
-        userId: sessionId, // Using sessionId as userId for demo
+        userId: sessionId, // Using sessionId as anonymous identifier
         preferences: {
           difficulty: "adaptive",
           pace: "moderate",
@@ -1256,6 +1299,50 @@ export const startLearningSession = action({
   },
 });
 ```
+
+## Authentication Requirements
+
+### **TL;DR: No Authentication Required**
+
+The AgentFlow implementation works perfectly **without user authentication**. Here's how:
+
+#### **What Works Without Auth:**
+
+✅ **Agent Conversations** - Use sessionId as anonymous identifier  
+✅ **Workflow Execution** - Track by session, not user account  
+✅ **Progress Persistence** - Session-based storage in database  
+✅ **Token Usage Tracking** - Anonymous analytics by session  
+✅ **All Current Features** - Maintains existing user experience
+
+#### **Simple Session-Based Approach:**
+
+```typescript
+// Generate anonymous session ID (current approach)
+const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+// Use sessionId everywhere instead of userId
+const threadId = await agent.createThread(ctx, {
+  userId: sessionId, // Agent needs an identifier, sessionId works fine
+  metadata: { isAnonymous: true, courseType: "how-convex-works" },
+});
+
+const workflowId = await workflow.start(ctx, learningWorkflow, {
+  sessionId,
+  userId: sessionId, // Same pattern for workflows
+  isAnonymous: true,
+});
+```
+
+#### **When You Might Want Auth Later:**
+
+- **Cross-device continuity** - Resume sessions on different devices
+- **Long-term progress tracking** - Multi-session learning analytics
+- **Personalized recommendations** - Based on historical learning patterns
+- **Social features** - Sharing progress, leaderboards, etc.
+
+#### **Easy Migration Path:**
+
+The session-based approach makes adding auth later trivial - just replace `sessionId` with actual `userId` when ready, and existing sessions can be migrated or left as anonymous historical data.
 
 ## Best Practices
 
