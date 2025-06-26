@@ -1,5 +1,16 @@
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+
+// Updated stats validators without howConvexWorks
+const courseBreakdownValidator = v.object({
+  chatMode: v.number(),
+  cardsMode: v.number(),
+});
+
+const averageScoreByModeValidator = v.object({
+  chatMode: v.number(),
+  cardsMode: v.number(),
+});
 
 // Get overall stats for the stats page
 export const getOverallStats = query({
@@ -9,16 +20,8 @@ export const getOverallStats = query({
     totalSessionsStarted: v.number(),
     averageScore: v.number(),
     totalQuestionsAnswered: v.number(),
-    courseBreakdown: v.object({
-      chatMode: v.number(),
-      cardsMode: v.number(),
-      howConvexWorks: v.number(),
-    }),
-    averageScoreByMode: v.object({
-      chatMode: v.number(),
-      cardsMode: v.number(),
-      howConvexWorks: v.number(),
-    }),
+    courseBreakdown: courseBreakdownValidator,
+    averageScoreByMode: averageScoreByModeValidator,
     completionRate: v.number(),
     totalSkippedQuestions: v.number(),
     correctAnswersEstimate: v.number(),
@@ -28,8 +31,11 @@ export const getOverallStats = query({
     const allSessions = await ctx.db.query("sessions").collect();
 
     // Filter out sessions that were never actually used (no messages and currentQuestion = 0)
+    // AND exclude archived sessions from public stats
     const activeSessions = allSessions.filter(
-      (session) => session.currentQuestion > 0 || session.messages.length > 0 || session.courseType
+      (session) =>
+        (session.currentQuestion > 0 || session.messages.length > 0 || session.courseType) &&
+        !session.isArchived // Exclude archived sessions from stats
     );
 
     const completedSessions = activeSessions.filter((session) => session.isCompleted);
@@ -46,41 +52,38 @@ export const getOverallStats = query({
       0
     );
 
-    // Course breakdown
+    // Calculate course breakdown - removed howConvexWorks
     const courseBreakdown = {
       chatMode: completedSessions.filter((s) => s.courseType === "build-apps").length,
       cardsMode: completedSessions.filter((s) => s.courseType === "build-apps-cards").length,
-      howConvexWorks: completedSessions.filter((s) => s.courseType === "how-convex-works").length,
     };
 
     // Average score by mode
     const chatModeSessions = completedSessions.filter((s) => s.courseType === "build-apps");
     const cardsModeSessions = completedSessions.filter((s) => s.courseType === "build-apps-cards");
-    const howConvexWorksSessions = completedSessions.filter(
-      (s) => s.courseType === "how-convex-works"
-    );
 
+    // Calculate average scores by mode - removed howConvexWorks
     const averageScoreByMode = {
       chatMode:
         chatModeSessions.length > 0
-          ? chatModeSessions.reduce((sum, s) => sum + (s.score || 0), 0) / chatModeSessions.length
+          ? Math.round(
+              chatModeSessions.reduce((sum, s) => sum + (s.score || 0), 0) / chatModeSessions.length
+            )
           : 0,
       cardsMode:
         cardsModeSessions.length > 0
-          ? cardsModeSessions.reduce((sum, s) => sum + (s.score || 0), 0) / cardsModeSessions.length
-          : 0,
-      howConvexWorks:
-        howConvexWorksSessions.length > 0
-          ? howConvexWorksSessions.reduce((sum, s) => sum + (s.score || 0), 0) /
-            howConvexWorksSessions.length
+          ? Math.round(
+              cardsModeSessions.reduce((sum, s) => sum + (s.score || 0), 0) /
+                cardsModeSessions.length
+            )
           : 0,
     };
 
-    // Completion rate
+    // Completion rate using active sessions (excluding archived)
     const completionRate =
       totalSessionsStarted > 0 ? (totalSessionsCompleted / totalSessionsStarted) * 100 : 0;
 
-    // Count skipped questions (sessions where lastActionWasSkip is true)
+    // Count skipped questions from active sessions (sessions where lastActionWasSkip is true)
     const totalSkippedQuestions = activeSessions.filter((s) => s.lastActionWasSkip).length;
 
     // Estimate correct/incorrect answers based on score distribution
@@ -97,11 +100,7 @@ export const getOverallStats = query({
       averageScore: Math.round(averageScore * 100) / 100,
       totalQuestionsAnswered,
       courseBreakdown,
-      averageScoreByMode: {
-        chatMode: Math.round(averageScoreByMode.chatMode * 100) / 100,
-        cardsMode: Math.round(averageScoreByMode.cardsMode * 100) / 100,
-        howConvexWorks: Math.round(averageScoreByMode.howConvexWorks * 100) / 100,
-      },
+      averageScoreByMode,
       completionRate: Math.round(completionRate * 100) / 100,
       totalSkippedQuestions,
       correctAnswersEstimate: estimatedCorrectAnswers,
@@ -126,19 +125,22 @@ export const getRecentActivity = query({
     })
   ),
   handler: async (ctx) => {
-    const sessions = await ctx.db.query("sessions").order("desc").take(20);
+    const sessions = await ctx.db.query("sessions").order("desc").take(50);
 
-    // Return only the fields we need for stats, excluding messages
-    return sessions.map((session) => ({
-      _id: session._id,
-      _creationTime: session._creationTime,
-      sessionId: session.sessionId,
-      score: session.score,
-      courseType: session.courseType,
-      isCompleted: session.isCompleted,
-      currentQuestion: session.currentQuestion,
-      totalQuestions: session.totalQuestions,
-    }));
+    // Filter out archived sessions and return only the fields we need for stats, excluding messages
+    return sessions
+      .filter((session) => !session.isArchived) // Exclude archived sessions
+      .slice(0, 20) // Take 20 after filtering
+      .map((session) => ({
+        _id: session._id,
+        _creationTime: session._creationTime,
+        sessionId: session.sessionId,
+        score: session.score,
+        courseType: session.courseType,
+        isCompleted: session.isCompleted,
+        currentQuestion: session.currentQuestion,
+        totalQuestions: session.totalQuestions,
+      }));
   },
 });
 
@@ -155,7 +157,8 @@ export const getScoreDistribution = query({
     const completedSessions = await ctx.db
       .query("sessions")
       .filter((q) => q.eq(q.field("isCompleted"), true))
-      .collect();
+      .collect()
+      .then((sessions) => sessions.filter((session) => !session.isArchived)); // Exclude archived sessions
 
     const distribution = {
       "0-20": 0,
@@ -184,4 +187,100 @@ export const getScoreDistribution = query({
   },
 });
 
-// Debug function removed - issues identified and resolved
+// AgentFlow: Track token usage for AI interactions
+export const trackTokenUsage = mutation({
+  args: {
+    sessionId: v.optional(v.string()),
+    model: v.string(),
+    inputTokens: v.number(),
+    outputTokens: v.number(),
+    totalTokens: v.number(),
+    cost: v.optional(v.number()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.insert("tokenUsage", {
+      sessionId: args.sessionId || "anonymous",
+      model: args.model,
+      inputTokens: args.inputTokens,
+      outputTokens: args.outputTokens,
+      totalTokens: args.totalTokens,
+      timestamp: Date.now(),
+      ...(args.cost && { cost: args.cost }),
+    });
+    return null;
+  },
+});
+
+export const getStats = query({
+  args: {},
+  returns: v.object({
+    totalSessions: v.number(),
+    activeSessions: v.number(),
+    completedSessions: v.number(),
+    totalQuestions: v.number(),
+    averageScore: v.number(),
+    courseBreakdown: v.record(v.string(), v.number()),
+    recentActivity: v.array(
+      v.object({
+        sessionId: v.string(),
+        courseType: v.optional(v.string()),
+        score: v.number(),
+        completedAt: v.number(),
+      })
+    ),
+  }),
+  handler: async (ctx) => {
+    const sessions = await ctx.db.query("sessions").collect();
+
+    // Filter for active sessions (sessions with progress or messages) and exclude archived sessions
+    const activeSessions = sessions.filter(
+      (session) =>
+        (session.currentQuestion > 0 ||
+          (session.messages && session.messages.length > 0) ||
+          session.courseType) &&
+        !session.isArchived // Exclude archived sessions from stats
+    );
+
+    const completedSessions = activeSessions.filter((session) => session.isCompleted);
+
+    // Calculate total questions answered across all active (non-archived) sessions
+    const totalQuestions = activeSessions.reduce(
+      (sum, session) => sum + session.currentQuestion,
+      0
+    );
+
+    // Calculate average score from active (non-archived) sessions
+    const totalScore = activeSessions.reduce((sum, session) => sum + session.score, 0);
+    const averageScore =
+      activeSessions.length > 0 ? Math.round(totalScore / activeSessions.length) : 0;
+
+    // Calculate course breakdown from active (non-archived) sessions - removed howConvexWorks
+    const courseBreakdown = {
+      chatMode: activeSessions.filter((s) => s.courseType === "build-apps").length,
+      cardsMode: activeSessions.filter((s) => s.courseType === "build-apps-cards").length,
+    };
+
+    // Recent activity (last 10 completed sessions)
+    const recentActivity = completedSessions
+      .filter((session) => session.isCompleted)
+      .sort((a, b) => (b.completedAt || b._creationTime) - (a.completedAt || a._creationTime))
+      .slice(0, 10)
+      .map((session) => ({
+        sessionId: session.sessionId,
+        courseType: session.courseType,
+        score: session.score,
+        completedAt: session.completedAt || session._creationTime,
+      }));
+
+    return {
+      totalSessions: sessions.length,
+      activeSessions: activeSessions.length,
+      completedSessions: completedSessions.length,
+      totalQuestions,
+      averageScore,
+      courseBreakdown,
+      recentActivity,
+    };
+  },
+});

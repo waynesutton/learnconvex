@@ -28,14 +28,12 @@ export function Stats() {
     });
   };
 
-  const getCourseDisplayName = (courseType?: string) => {
+  const getCourseTypeName = (courseType: string): string => {
     switch (courseType) {
       case "build-apps":
         return "Chat Mode";
       case "build-apps-cards":
         return "Cards Mode";
-      case "how-convex-works":
-        return "How Convex Works";
       default:
         return "Unknown";
     }
@@ -57,7 +55,7 @@ export function Stats() {
             href="/"
             className="px-4 py-2 text-sm bg-gray-900 text-white hover:bg-gray-800 transition-colors"
             style={{ borderRadius: "30px" }}>
-            Back to Courses
+            Home
           </a>
         </div>
       </header>
@@ -112,7 +110,8 @@ export function Stats() {
             </div>
             <a
               href="/"
-              className="inline-block px-6 py-3 bg-convex-red text-white hover:bg-convex-red-dark transition-colors rounded-lg">
+              className="inline-block px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition-colors font-semibold"
+              style={{ borderRadius: "30px" }}>
               Start Learning
             </a>
           </div>
@@ -184,23 +183,6 @@ export function Stats() {
                     </span>
                   </div>
                 </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">How Convex Works</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-convex-yellow h-2 rounded-full"
-                        style={{
-                          width: `${overallStats.totalSessionsCompleted > 0 ? (overallStats.courseBreakdown.howConvexWorks / overallStats.totalSessionsCompleted) * 100 : 0}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {overallStats.courseBreakdown.howConvexWorks}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -234,21 +216,6 @@ export function Stats() {
                     </div>
                     <span className="text-sm font-semibold text-gray-900">
                       {overallStats.averageScoreByMode.cardsMode}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">How Convex Works</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-convex-yellow h-2 rounded-full"
-                        style={{ width: `${overallStats.averageScoreByMode.howConvexWorks}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {overallStats.averageScoreByMode.howConvexWorks}
                     </span>
                   </div>
                 </div>
@@ -311,7 +278,7 @@ export function Stats() {
                     />
                     <div>
                       <div className="font-medium text-gray-900">
-                        {getCourseDisplayName(session.courseType)}
+                        {getCourseTypeName(session.courseType)}
                       </div>
                       <div className="text-sm text-gray-600">
                         {formatDate(session._creationTime)}

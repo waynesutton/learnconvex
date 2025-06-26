@@ -1,310 +1,310 @@
-# Files Overview
+# ConvexCourse Files Documentation
 
-This document provides a comprehensive overview of all the files in the Convex Learning Course App codebase and their purposes.
+## Overview
+
+ConvexCourse is an interactive learning platform for teaching developers how to build applications with Convex.dev. The platform offers two distinct learning modes - Chat Mode and Cards Mode - with AI-powered instruction, voice capabilities, admin management tools, and comprehensive analytics.
 
 ## Root Configuration Files
 
-### `package.json`
+### Package Management
 
-- **Purpose**: Defines project dependencies, scripts, and metadata
-- **Key Dependencies**: React 19, Convex, OpenAI, TailwindCSS, TypeScript
-- **Scripts**: Development, build, preview, and linting commands
-- **Deployment Ready**: Configured with proper build scripts for Vercel deployment
+- **package.json**: Project dependencies and scripts
+  - Core: Convex, React, Vite, TypeScript, TailwindCSS
+  - Authentication: Clerk (@clerk/clerk-react)
+  - AgentFlow: @convex-dev/agent, @convex-dev/workflow
+  - AI Integration: @ai-sdk/openai, openai, zod
+  - Voice: ElevenLabs integration for text-to-speech
+  - UI: canvas-confetti, react-syntax-highlighter, sonner (toasts)
+  - Search: Document chunking and similarity search capabilities
 
-### `vercel.json`
+### Build & Development
 
-- **Purpose**: Vercel deployment configuration file
-- **Features**: Optimized build command with Convex integration, proper framework detection
-- **Build Process**: Uses `npx convex deploy --cmd 'npm run build'` for seamless backend/frontend deployment
+- **vite.config.ts**: Vite bundler configuration with React plugin and path aliases
+- **tsconfig.json**: Main TypeScript configuration
+- **tsconfig.app.json**: TypeScript config for application code
+- **tsconfig.node.json**: TypeScript config for Node.js code
+- **tailwind.config.js**: TailwindCSS configuration with custom Convex branding colors
+- **postcss.config.cjs**: PostCSS configuration for TailwindCSS
+- **eslint.config.js**: ESLint configuration for code quality
+- **components.json**: Shadcn/ui component configuration
 
-### `vite.config.ts`
+### Deployment
 
-- **Purpose**: Vite bundler configuration for the frontend
-- **Features**: React plugin setup, development server configuration
+- **vercel.json**: Vercel deployment configuration with build settings
+- **index.html**: HTML entry point with meta tags, OpenGraph, and Convex favicon
 
-### `tsconfig.json` / `tsconfig.app.json` / `tsconfig.node.json`
+### Project Setup
 
-- **Purpose**: TypeScript compiler configurations for different environments
-- **Scope**: Main config, app-specific config, and Node.js-specific config
-- **Type Safety**: Strict TypeScript configuration for deployment readiness
+- **setup.mjs**: Project initialization script
 
-### `tailwind.config.js`
+## Convex Backend (`convex/`)
 
-- **Purpose**: TailwindCSS configuration with custom design system
-- **Features**: Custom colors, fonts, and design tokens
+### Core Configuration
 
-### `postcss.config.cjs`
+- **convex.config.ts**: Convex app configuration with Agent and Workflow components
+- **auth.config.ts**: Clerk authentication configuration for Convex with admin role support
+- **schema.ts**: Database schema definitions for all tables:
+  - `sessions`: Learning session data with AgentFlow support, voice tracking, and admin intervention flags
+  - `messages`: Separate message storage with voice message tracking and admin intervention support
+  - `courseSettings`: Admin-configurable course parameters (question counts, scoring)
+  - `convexDocs`: Documentation management for AI accuracy with content caching
+  - `tokenUsage`: AI token consumption tracking for analytics
+  - `agentUsage`: AgentFlow-specific token and usage tracking
+  - `questions`: Question bank with course type indexing
+  - `documents` & `documentChunks`: Document search and similarity matching
+  - `playgroundSessions`: AgentFlow playground session tracking
 
-- **Purpose**: PostCSS configuration for CSS processing
-- **Plugins**: Tailwind and Autoprefixer integration
+### Main Application Logic
 
-### `eslint.config.js`
+- **course.ts**: Core course functionality and AI integration
+  - Session management with randomized questions and voice message tracking
+  - AI-powered responses using OpenAI GPT-4o-mini with documentation context
+  - Progress tracking and scoring system with dynamic admin-configurable settings
+  - Support for two course modes: "Build Apps (Chat Mode)" and "Build Apps (Cards Mode)"
+  - Documentation-enhanced AI responses with active Convex docs integration
+  - Course settings management with real-time configuration updates
+  - Voice message tracking and admin intervention support
 
-- **Purpose**: ESLint configuration for code quality and consistency
-- **Rules**: React, TypeScript, and modern JavaScript standards
+### Learning Content
 
-### `components.json`
+- **questions.ts**: Question bank with randomization utilities
+  - Focused on practical Convex development skills
+  - Build Apps question sets covering setup, schema, queries, mutations, deployment
+  - Randomization functions for varied learning experiences
+  - Question metadata with topics and explanations
 
-- **Purpose**: Shadcn/ui component library configuration
-- **Features**: Component styling and path configuration
+### AgentFlow Integration
 
-### `setup.mjs`
+- **agentflow.ts**: AgentFlow integration infrastructure
+  - Status tracking and analytics for Agent-powered sessions
+  - Enhanced learning workflow management
+  - Integration with Convex Agent and Workflow components
+- **courseAgent.ts**: Agent-powered response generation
+  - Enhanced AI instruction with persistent conversation context
+  - Fallback to classic mode for reliability
+  - Documentation-enhanced system prompts
+  - Session-based Agent thread management (no authentication required)
 
-- **Purpose**: Project setup script for initial configuration
-- **Function**: Automates project initialization steps
+### Voice Integration
 
-### `index.html`
+- **voice.ts**: Voice interaction capabilities
+  - Text-to-speech using ElevenLabs API
+  - Base64 audio generation for real-time playback
+  - Speech-to-text placeholder (currently uses browser Web Speech API)
+  - Voice command processing integration
 
-- **Purpose**: HTML entry point for the Vite application
-- **Content**: Basic HTML structure and root div for React mounting
+### Document Search
 
-## Frontend Source Files (`src/`)
+- **documentSearch.ts**: Document management and search functionality
+  - Document upload and storage with chunking
+  - Similarity search capabilities (vector search ready)
+  - Document metadata management
+  - Content extraction and indexing
 
-### `src/main.tsx`
+### Admin Tools
 
-- **Purpose**: React application entry point
-- **Function**: Renders the root App component and sets up ConvexProvider
+- **playground.ts**: Comprehensive admin playground functionality
+  - Real-time session monitoring with live message tracking
+  - Session intervention tools with contextual message insertion
+  - Progress manipulation (scores, question advancement)
+  - Bulk operations (archive, delete, clear messages)
+  - Session takeover for manual instruction
+  - Admin statistics and analytics
+  - Message editing and deletion capabilities
 
-### `src/App.tsx`
+### Analytics & Monitoring
 
-- **Purpose**: Main application component with course interface
-- **Features**:
-  - Course selection (How Convex Works vs Build Apps)
-  - Real-time chat interface with AI instructor
-  - Session management and progress tracking
-  - Celebration animations and gamification
-  - Completion page with course summary
-  - Branded thinking indicator with spinning Convex favicon
+- **stats.ts**: Learning analytics and statistics
+  - Course completion metrics by mode (Chat/Cards)
+  - Score distribution analysis with difficulty tracking
+  - Token usage tracking for AI interactions and cost analysis
+  - Recent activity feeds and user engagement metrics
+  - Completion rate tracking across course types
 
-### `src/AppRouter.tsx`
+### HTTP Routing
 
-- **Purpose**: Main routing component using React Router
-- **Features**: Routes between main app and stats page
+- **http.ts**: HTTP routes configuration (minimal setup for potential future API endpoints)
+- **router.ts**: HTTP router setup
 
-### `src/SignInForm.tsx`
+## Frontend (`src/`)
 
-- **Purpose**: User authentication form component
-- **Features**: Anonymous sign-in with Convex Auth integration
+### Main Application
 
-### `src/SignOutButton.tsx`
+- **main.tsx**: React app entry point with Clerk authentication providers and ConvexProvider
+- **App.tsx**: Main learning application component
+  - Two learning modes: Chat Mode (interactive AI conversation) and Cards Mode (flashcard-style)
+  - Dynamic course selection with real-time settings from database
+  - Voice interaction support with speech recognition and text-to-speech
+  - Progress tracking with dynamic question counts and scoring
+  - Celebration animations with confetti and badge system
+  - Session persistence with localStorage backup
+  - AgentFlow integration toggle for enhanced AI experience
+- **AppRouter.tsx**: React Router configuration with protected admin routes
 
-- **Purpose**: Sign-out functionality component
-- **Function**: Handles user logout from Convex Auth
+### Authentication & Access Control
 
-### `src/index.css`
+- **components/AdminLogin.tsx**: Admin authentication page with Clerk integration
+- **components/AdminRoute.tsx**: Admin role protection wrapper component
+- **components/NotFound.tsx**: 404 error page for unauthorized access
 
-- **Purpose**: Global CSS styles and TailwindCSS imports
-- **Features**: Custom CSS variables and base styling
+### Learning Interface Components
 
-### `src/vite-env.d.ts`
+- **components/DuolingoCards.tsx**: Card-based learning interface
 
-- **Purpose**: TypeScript declarations for Vite environment
-- **Function**: Provides type definitions for Vite-specific features
+  - Swipe-to-answer functionality with visual feedback animations
+  - Dynamic question counts and scoring based on admin settings
+  - Progress indicators using database-driven totals
+  - Admin hint integration for contextual help
+  - Completion tracking with celebration system
 
-## Frontend Components (`src/components/`)
+- **components/MessageRenderer.tsx**: Chat message rendering
 
-### `src/components/MessageRenderer.tsx`
+  - Markdown support with syntax highlighting
+  - Code block rendering with copy functionality
+  - Message role differentiation (user/assistant/admin)
+  - Voice message indicators and admin intervention flags
 
-- **Purpose**: Renders chat messages with rich formatting
-- **Features**:
-  - Markdown parsing and rendering
-  - Syntax highlighting for code blocks
-  - User vs assistant message styling
-  - Timestamp display
-
-### `src/components/CodeBlock.tsx`
-
-- **Purpose**: Specialized component for rendering code with syntax highlighting
-- **Features**:
+- **components/CodeBlock.tsx**: Syntax-highlighted code display
+  - Copy to clipboard functionality
   - Multiple language support
-  - Copy-to-clipboard functionality
-  - Themed syntax highlighting
+  - Convex-specific syntax highlighting
 
-### `src/components/Stats.tsx`
+### Admin & Management Tools
 
-- **Purpose**: Public statistics page showing learning analytics
-- **Features**:
-  - Overall course completion and scoring statistics
-  - Course mode breakdowns (Chat/Cards/How Convex Works)
-  - Score distribution charts
-  - Recent learning activity feed
-  - Estimated correct/incorrect answer tracking
+- **components/Playground.tsx**: Admin playground interface
 
-## Backend Convex Functions (`convex/`)
+  - Real-time session monitoring with live updates
+  - Session intervention tools with contextual targeting
+  - Progress manipulation controls (scores, questions)
+  - Message editing and deletion capabilities
+  - Bulk operations for session management
+  - User session analytics and statistics
+  - Voice message tracking and admin notes
 
-### `convex/schema.ts`
+- **components/CourseSettingsPage.tsx**: Course configuration interface
 
-- **Purpose**: Database schema definitions for Convex
-- **Tables**:
-  - `sessions`: User learning sessions with progress tracking
-  - Auth tables from Convex Auth
-- **Features**: Indexes for efficient querying, type-safe field definitions
+  - Course settings management for both learning modes
+  - Documentation links management with CRUD operations
+  - Real-time content refresh from external documentation URLs
+  - Default documentation integration (docs.convex.dev)
+  - Settings validation and error handling
 
-### `convex/course.ts`
+- **components/DocumentSearch.tsx**: Document management interface
+  - Document upload with file type validation
+  - Full-text search across uploaded documents
+  - Document metadata display and management
+  - Delete functionality with confirmation dialogs
+  - Search result scoring and relevance display
 
-- **Purpose**: Main course logic and AI integration (TYPE-SAFE & DEPLOYMENT-READY)
-- **Functions**:
-  - `createSession`: Initialize new learning sessions with randomized question order
-  - `getSession`: Retrieve session data with proper return validators
-  - `addMessage`: Add messages to chat history
-  - `updateSession`: Update session progress and scores
-  - `generateResponse`: AI-powered response generation using OpenAI with structured questions
-  - `getCurrentQuestion`: Get the current question for a session based on randomized order
-  - `getRandomizedQuestions`: Get all questions for cards mode in randomized order
-- **Features**:
-  - Configurable course settings
-  - Two distinct course tracks with different system prompts
-  - Progress tracking and scoring algorithms
-  - Randomized question ordering for each new session
-  - Structured question system with predefined answers and explanations
-  - **Full type safety with proper return validators for all functions**
+### Analytics & Reporting
 
-### `convex/questions.ts`
+- **components/Stats.tsx**: Learning analytics dashboard
+  - Overall course completion statistics and trends
+  - Score distribution charts and performance metrics
+  - Recent activity feeds with user engagement tracking
+  - Course mode comparison (Chat vs Cards performance)
+  - Real-time data visualization with responsive design
+  - Token usage tracking and cost analysis visualization
 
-- **Purpose**: Shared question bank and randomization utilities
-- **Exports**:
-  - `HOW_CONVEX_WORKS_QUESTIONS`: Conceptual questions about Convex fundamentals
-  - `BUILD_APPS_QUESTIONS`: Practical development questions and commands
-  - `getQuestionsForCourse`: Get questions array for specific course type
-  - `shuffleQuestions`: Utility to randomize question order
-  - `generateRandomizedQuestionOrder`: Generate randomized indices for questions
-- **Features**:
-  - Structured question format with topics, answers, and explanations
-  - Different question sets for different course types
-  - Randomization utilities for varied learning experiences
+### UI Components & Utilities
 
-### `convex/auth.config.ts`
+- **components/Modal.tsx**: Reusable modal component with overlay
 
-- **Purpose**: Authentication configuration for Convex Auth
-- **Features**: Provider setup and authentication flows
+  - Customizable content areas and action buttons
+  - Keyboard navigation and accessibility support
+  - Used for confirmations, settings, and detailed views
 
-### `convex/auth.ts`
+- **lib/utils.ts**: Utility functions for common operations
+  - CSS class merging with Tailwind utilities
+  - Data formatting and validation helpers
+  - Shared constants and configuration values
 
-- **Purpose**: Authentication implementation and handlers (TYPE-SAFE)
-- **Function**: Sets up Convex Auth with anonymous authentication
-- **Features**: Proper return validators for all auth functions
+### Type Definitions
 
-### `convex/http.ts`
+- **speech-recognition.d.ts**: TypeScript definitions for Web Speech API
 
-- **Purpose**: HTTP routes configuration
-- **Function**: Sets up HTTP endpoints and integrates with auth
+  - Browser speech recognition interface declarations
+  - Cross-browser compatibility type definitions
+  - Voice command and transcription type safety
 
-### `convex/router.ts`
+- **vite-env.d.ts**: Vite environment type definitions for development
 
-- **Purpose**: Custom HTTP route definitions
-- **Function**: Defines user-specific HTTP endpoints separate from auth routes
+## Documentation Files
 
-### `convex/stats.ts`
+### Project Documentation
 
-- **Purpose**: Statistics and analytics queries for the stats page (TYPE-SAFE)
-- **Functions**:
-  - `getOverallStats`: Aggregates course completion, scoring, and user engagement data
-  - `getRecentActivity`: Returns recent learning sessions for activity feed
-  - `getScoreDistribution`: Provides score range distribution for data visualization
-- **Features**: Comprehensive return validators for all statistical queries
+- **README.md**: Comprehensive project overview and setup guide
 
-### `convex/tsconfig.json`
+  - Feature descriptions and learning mode explanations
+  - Installation instructions with environment variable setup
+  - Usage guides for both learners and administrators
+  - Technical architecture documentation
+  - Deployment and maintenance information
 
-- **Purpose**: TypeScript configuration specifically for Convex functions
-- **Features**: Convex-specific compiler options and path mappings
+- **agentflow.md**: AgentFlow integration documentation
 
-## Auto-Generated Files (`convex/_generated/`)
+  - Implementation patterns for Agent and Workflow components
+  - Benefits of combining AgentFlow with Convex for learning platforms
+  - Technical deep-dive into persistent conversation context
+  - Best practices for multi-step AI workflows
 
-### `convex/_generated/api.ts`
+- **betterauthcourse.md**: Better Auth integration course materials
 
-- **Purpose**: Auto-generated API client for frontend-backend communication
-- **Function**: Provides type-safe function references for queries, mutations, and actions
+  - Alternative authentication implementation examples
+  - Comparison with Clerk authentication
+  - Security patterns and best practices
 
-### `convex/_generated/server.ts`
+- **TASKS.md**: Development task tracking and feature roadmap
 
-- **Purpose**: Auto-generated server-side utilities and types
-- **Function**: Provides server context types and function registration helpers
+  - Current sprint objectives and completed features
+  - Bug tracking and resolution status
+  - Future enhancement planning and priorities
 
-### `convex/_generated/dataModel.ts`
+- **files.md**: This file - comprehensive codebase documentation
+  - Detailed explanation of every component and its purpose
+  - Architecture decisions and implementation patterns
+  - Developer onboarding and contribution guidelines
 
-- **Purpose**: Auto-generated database types based on schema
-- **Function**: Provides TypeScript types for all database tables and documents
+## Technical Architecture
 
-## Deployment Configuration
+### Backend (Convex)
 
-### `vercel.json`
+- **Reactive Database**: Real-time synchronization across all components
+- **Type-Safe Functions**: Full TypeScript coverage with Convex validators
+- **AgentFlow Integration**: Enhanced AI with persistent context and workflows
+- **Serverless Architecture**: Automatic scaling and global edge distribution
 
-- **Purpose**: Vercel deployment configuration
-- **Features**:
-  - Optimized build command with Convex integration
-  - Proper framework detection (Vite)
-  - Correct output directory configuration
-  - Automatic Convex function deployment
+### Frontend (React + TypeScript)
 
-### Environment Variables Required for Deployment
+- **Modern React**: Hooks, suspense, and real-time updates
+- **Voice Integration**: Web Speech API + ElevenLabs synthesis
+- **Responsive Design**: Mobile-first with TailwindCSS
+- **Real-time UI**: Live updates via Convex reactive queries
 
-- `CONVEX_DEPLOY_KEY`: Production deploy key from Convex Dashboard
-- `CONVEX_OPENAI_API_KEY`: OpenAI API key for AI course content
-- `CONVEX_URL`: Automatically set by Convex during deployment
+### AI & Voice
 
-## Utility Directories
+- **OpenAI GPT-4o-mini**: Primary AI instruction engine
+- **ElevenLabs**: High-quality text-to-speech synthesis
+- **Documentation Context**: AI responses enhanced with current Convex docs
+- **AgentFlow**: Persistent conversation context and workflow management
 
-### `src/lib/`
+### Authentication & Security
 
-- **Purpose**: Utility functions and shared libraries
-- **Status**: Currently empty but reserved for future utility functions
+- **Clerk**: Production-ready authentication with admin roles
+- **Anonymous Learning**: No auth required for core learning experience
+- **Role-based Access**: Admin tools protected behind authentication
+- **Session Security**: Secure session management with intervention controls
 
-### `.cursor/`
+### Analytics & Monitoring
 
-- **Purpose**: Cursor AI editor configuration and rules
-- **Content**: Custom AI coding assistant rules and preferences
+- **Real-time Metrics**: Live session monitoring and progress tracking
+- **Cost Tracking**: AI token usage and financial analytics
+- **Performance Monitoring**: Response times and system health
+- **User Analytics**: Learning patterns and engagement metrics
 
-## Hidden/System Files
+### Deployment
 
-### `.DS_Store`
-
-- **Purpose**: macOS system file for folder display preferences
-- **Note**: Should be in `.gitignore`
-
-### `.gitignore`
-
-- **Purpose**: Specifies which files Git should ignore
-- **Content**: Node modules, build outputs, environment files, and system files
-
-### `package-lock.json`
-
-- **Purpose**: Locked dependency versions for reproducible builds
-- **Function**: Ensures consistent dependency installation across environments
-
-## Key File Relationships
-
-1. **Frontend-Backend Communication**:
-
-   - `src/App.tsx` → `convex/_generated/api.ts` → `convex/course.ts`
-
-2. **Database Schema**:
-
-   - `convex/schema.ts` → `convex/_generated/dataModel.ts` → TypeScript types
-
-3. **Authentication Flow**:
-
-   - `src/SignInForm.tsx` → `convex/auth.ts` → `convex/auth.config.ts`
-
-4. **Styling Pipeline**:
-
-   - `src/index.css` → `tailwind.config.js` → `postcss.config.cjs`
-
-5. **Build Process**:
-
-   - `vite.config.ts` → `tsconfig.app.json` → Built application
-
-6. **Deployment Process**:
-   - `vercel.json` → `package.json` build script → Convex deployment → Production app
-
-## Type Safety & Deployment Readiness
-
-This codebase is fully type-safe and deployment-ready with:
-
-- ✅ All Convex functions have proper argument and return validators
-- ✅ TypeScript strict mode enabled across all configurations
-- ✅ Proper error handling and validation
-- ✅ Optimized build configuration for Vercel
-- ✅ Environment variable documentation
-- ✅ Production-ready Convex deployment setup
-
-This file structure follows Convex best practices with clear separation between frontend React code and backend Convex functions, enabling real-time reactivity and type safety throughout the application while being fully prepared for production deployment.
+- **Vercel**: Frontend hosting with automatic deployments
+- **Convex Cloud**: Backend hosting with global distribution
+- **Environment Management**: Secure configuration for production and development
+- **CI/CD**: Automated testing and deployment pipelines

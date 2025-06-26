@@ -45,6 +45,7 @@ Interactive learning platform for Convex backend development with AI-powered cou
 
 ## Future Tasks
 
+- [ ] 3 levels ( beginner 3 questions, intermedted, 10 questions, expert, 20 questions)
 - [ ] Add more course types/modules
 - [ ] Add Convex Agent https://www.convex.dev/components/agent
 - [ ] Add Convex workflow https://www.convex.dev/components/workflow
@@ -59,7 +60,20 @@ Interactive learning platform for Convex backend development with AI-powered cou
 
 - [ ] Add interactive code examples that users can run
 - [ ] Implement user authentication with Clerk
-- [ ] Add "How Convex Works" - Conceptual understanding of Convex fundamentals
+
+## Course Features
+
+- [x] Two course modes: "Build Apps (Chat Mode)" and "Build Apps (Cards Mode)"
+- [x] Configurable difficulty levels (beginning, intermediate, advanced)
+- [x] Question randomization for varied learning experiences
+- [x] Course type selection at session start
+- [x] Separate question sets for each course type
+- [x] Dynamic completion criteria based on course type
+- [x] Proper course labeling and progress tracking
+- [x] Ensured proper session initialization for cards mode
+- [x] Fixed course type display in completion page
+- [x] Updated completion page to show correct course type for cards mode
+- [x] Added course-specific branding and messaging
 
 ## Implementation Plan
 

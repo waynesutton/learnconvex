@@ -972,7 +972,7 @@ export default function App() {
         preferences: {
           difficulty: "adaptive",
           pace: "moderate",
-          focusAreas: courseType === "how-convex-works"
+          focusAreas: courseType === "build-apps"
             ? ["reactivity", "queries", "mutations"]
             : ["setup", "schema", "functions"]
         }
@@ -1082,8 +1082,8 @@ function ProgressHeader({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold">
-            {session?.courseType === "how-convex-works"
-              ? "How Convex Works"
+                    {session?.courseType === "build-apps"
+          ? "Build Apps (Chat Mode)"
               : "Build Apps with Convex"}
           </h2>
           <p className="text-sm text-gray-600">
@@ -1323,7 +1323,7 @@ const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 
 // Use sessionId everywhere instead of userId
 const threadId = await agent.createThread(ctx, {
   userId: sessionId, // Agent needs an identifier, sessionId works fine
-  metadata: { isAnonymous: true, courseType: "how-convex-works" },
+  metadata: { isAnonymous: true, courseType: "build-apps" },
 });
 
 const workflowId = await workflow.start(ctx, learningWorkflow, {

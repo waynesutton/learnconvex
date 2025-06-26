@@ -1,53 +1,189 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Toaster } from "sonner";
 import { MessageRenderer } from "./components/MessageRenderer";
-import { Cards } from "./components/DuolingoCards";
-import confetti from "canvas-confetti";
 
-// Course settings for dynamic scoring
-const COURSE_SETTINGS = {
-  "how-convex-works": {
-    totalQuestions: 10,
-    maxScore: 100,
-  },
-  "build-apps": {
-    totalQuestions: 7,
-    maxScore: 100,
-  },
-  "build-apps-cards": {
-    totalQuestions: 7,
-    maxScore: 100,
-  },
-};
+import confetti from "canvas-confetti";
+import { DuolingoCards } from "./components/DuolingoCards";
 
 export default function App() {
-  const [sessionId] = useState(
-    () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  );
-  const [currentMessage, setCurrentMessage] = useState("");
+  const [sessionId, setSessionId] = useState<string>("");
+  const [userMessage, setUserMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [courseType, setCourseType] = useState<string | null>(null);
   const [showInitialQuestions, setShowInitialQuestions] = useState(true);
   const [showCompletionPage, setShowCompletionPage] = useState(false);
   const [showCardsMode, setShowCardsMode] = useState(false);
   const [celebrationBadges, setCelebrationBadges] = useState<string[]>([]);
   const [showBadge, setShowBadge] = useState<string | null>(null);
+
+  // AgentFlow state
+  const [useAgentFlow, setUseAgentFlow] = useState(false);
+  const [agentThreadId, setAgentThreadId] = useState<string | null>(null);
+
+  // Voice state
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentlyPlayingMessageId, setCurrentlyPlayingMessageId] = useState<string | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousQuestionRef = useRef<number>(0);
   const badgeCountRef = useRef<number>(0);
 
-  const session = useQuery(api.course.getSession, { sessionId });
+  // Initialize session ID only once on mount
+  useEffect(() => {
+    const initializeSession = () => {
+      const stored = localStorage.getItem("convex-course-session");
+      if (stored && stored !== "") {
+        console.log(`🔄 Using stored session: ${stored}`);
+        setSessionId(stored);
+      } else {
+        console.log("🆕 No stored session found - will create new one when course is selected");
+        setSessionId("");
+      }
+    };
+
+    initializeSession();
+  }, []);
+
+  const session = useQuery(api.course.getSession, sessionId ? { sessionId } : "skip");
   const createSession = useMutation(api.course.createSession);
   const addMessage = useMutation(api.course.addMessage);
   const updateSession = useMutation(api.course.updateSession);
-  const generateResponse = useAction(api.course.generateResponse);
+  const endCourse = useMutation(api.course.endCourse);
 
-  // Don't create session immediately - only create when user actually starts a course
+  // Enhanced response generation with AgentFlow support
+  const generateResponse = useAction(api.course.generateResponse);
+  const generateResponseWithAgent = useAction(api.courseAgent.generateResponseWithAgent);
+
+  // Voice actions
+  const textToSpeech = useAction(api.voice.textToSpeech);
+
+  // Get dynamic course settings for current session
+  const courseSettings = useQuery(
+    api.course.getCourseSettings,
+    session?.courseType
+      ? {
+          courseType: session.courseType,
+          difficulty: "default", // Use a default difficulty since we removed selection
+        }
+      : "skip"
+  );
+
+  // Calculate dynamic total questions based on settings
+  const dynamicTotalQuestions = courseSettings?.totalQuestions || session?.totalQuestions || 10;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [session?.messages]);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = "en-US";
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setUserMessage(transcript);
+        setIsListening(false);
+
+        // Check for voice commands - but don't auto-send to prevent session interference
+        const lowerTranscript = transcript.toLowerCase().trim();
+        if (lowerTranscript === "end") {
+          // Auto-send voice commands
+          handleSendMessage(transcript, true, "end");
+        } else if (lowerTranscript === "skip") {
+          // Handle skip separately
+          handleSkipQuestion(true);
+        }
+        // For other messages, just set the text - user needs to manually send
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.log("Speech recognition error:", event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
+
+  // Voice handlers
+  const startListening = () => {
+    if (recognitionRef.current && !isListening) {
+      setIsListening(true);
+      setUserMessage("");
+      recognitionRef.current.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  const handleTextToSpeech = async (text: string, messageIndex: number) => {
+    if (isPlaying && currentlyPlayingMessageId === `message-${messageIndex}`) {
+      // Stop current audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      setIsPlaying(false);
+      setCurrentlyPlayingMessageId(null);
+      return;
+    }
+
+    try {
+      setIsPlaying(true);
+      setCurrentlyPlayingMessageId(`message-${messageIndex}`);
+
+      // Clean text for TTS (remove markdown formatting)
+      const cleanText = text
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/```[\s\S]*?```/g, "code block")
+        .replace(/`(.*?)`/g, "$1");
+
+      const base64Audio = await textToSpeech({ text: cleanText });
+
+      // Create audio element and play
+      audioRef.current = new Audio(`data:audio/mpeg;base64,${base64Audio}`);
+      audioRef.current.onended = () => {
+        setIsPlaying(false);
+        setCurrentlyPlayingMessageId(null);
+      };
+      audioRef.current.onerror = () => {
+        setIsPlaying(false);
+        setCurrentlyPlayingMessageId(null);
+      };
+
+      await audioRef.current.play();
+    } catch (error) {
+      console.error("Error with text-to-speech:", error);
+      setIsPlaying(false);
+      setCurrentlyPlayingMessageId(null);
+    }
+  };
 
   // Fun badges and kudos messages
   const celebrationMessages = [
@@ -96,54 +232,178 @@ export default function App() {
     }, 250);
   };
 
-  const handleCourseSelection = async (courseType: string) => {
-    setShowInitialQuestions(false);
+  const handleCourseSelection = async (courseType: string, enableAgentFlow = false) => {
+    try {
+      console.log(`🚀 Starting course selection: ${courseType}, AgentFlow: ${enableAgentFlow}`);
 
-    // Create session only when user actually selects a course
-    await createSession({ sessionId, courseType });
+      // Generate new session ID FIRST
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      console.log(`✨ Creating new session: ${newSessionId}`);
 
-    // Check if it's the cards mode
-    if (courseType === "build-apps-cards") {
-      setShowCardsMode(true);
-      return;
+      // Update UI state immediately
+      setShowInitialQuestions(false);
+      setUseAgentFlow(enableAgentFlow);
+      setCourseType(courseType);
+
+      // Archive old session if it exists (but don't fail if it doesn't)
+      if (sessionId && sessionId !== newSessionId && sessionId !== "") {
+        console.log(`📦 Attempting to archive old session: ${sessionId}`);
+        try {
+          // Use the OLD session ID to archive
+          await updateSession({
+            sessionId: sessionId, // Use the OLD session ID
+            isCompleted: true,
+            currentQuestion: 99,
+          });
+          console.log(`✅ Old session archived: ${sessionId}`);
+        } catch (error) {
+          console.log(`⚠️ Could not archive old session (might not exist): ${error}`);
+          // Don't fail the whole flow if archiving fails
+        }
+      } else {
+        console.log("🆕 No existing session to archive - starting fresh");
+      }
+
+      // Update localStorage and React state with NEW session ID
+      localStorage.setItem("convex-course-session", newSessionId);
+      setSessionId(newSessionId);
+
+      // Create the fresh session in database with NEW session ID - force new to ensure clean slate
+      const sessionCreationResult = await createSession({
+        sessionId: newSessionId,
+        courseType: courseType,
+        difficulty: "default",
+        forceNew: true, // Force creation of new session
+      });
+
+      console.log(
+        `✅ New session created: ${newSessionId} with courseType: ${courseType}, ID: ${sessionCreationResult}`
+      );
+
+      // Check if it's the cards mode
+      if (courseType === "build-apps-cards") {
+        setShowCardsMode(true);
+        return;
+      }
+
+      // Give session time to propagate - increase wait time
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // ONLY use AgentFlow - no fallback
+      if (enableAgentFlow) {
+        console.log("🤖 Initializing AgentFlow...");
+
+        // Set agent thread ID in React state (don't update DB yet)
+        setAgentThreadId(newSessionId);
+
+        // Start agent flow with NEW session ID directly
+        console.log("🎯 Starting AgentFlow response generation...");
+        await generateResponseWithAgent({
+          sessionId: newSessionId, // Use the NEW session ID
+          userMessage: "start",
+        });
+
+        // Only update session with agentThreadId after agent flow succeeds
+        try {
+          await updateSession({
+            sessionId: newSessionId,
+            agentThreadId: newSessionId,
+          });
+          console.log("✅ AgentFlow thread ID saved to session");
+        } catch (updateError) {
+          console.log("⚠️ Could not save agent thread ID to session:", updateError);
+          // Don't fail the whole flow if this update fails
+        }
+
+        console.log("✅ AgentFlow initialized successfully");
+      } else {
+        // Regular mode - no AgentFlow
+        console.log("💬 Using regular mode...");
+        const welcomeMessage = `Excellent choice! Let's learn how to build apps with Convex.\n\nWe'll start with the basics and work our way up to building real applications. Convex makes it incredibly easy to go from idea to deployed app.\n\nHere's how you start a new Convex project:\n\n\`\`\`bash\nnpx create-convex@latest my-app\ncd my-app\nnpm run dev\n\`\`\`\n\nFirst question: When starting a new Convex project, what's the very first command you would run? (Hint: it involves npm or npx)`;
+
+        await addMessage({
+          sessionId: newSessionId, // Use the NEW session ID
+          role: "assistant",
+          content: welcomeMessage,
+        });
+      }
+
+      console.log("🎉 Course selection completed successfully");
+    } catch (error) {
+      console.error("💥 Error in handleCourseSelection:", error);
+      // Reset to initial state on error
+      setShowInitialQuestions(true);
+      setUseAgentFlow(false);
+      setCourseType(null);
+      throw error; // Re-throw to show user the error
     }
-
-    const welcomeMessage =
-      courseType === "how-convex-works"
-        ? "Great choice! Let's start by understanding how Convex works.\n\nConvex is a reactive backend that automatically keeps your frontend in sync with your database. When data changes on the server, your React components automatically re-render with the latest data - no manual refreshing needed!\n\nHere's a simple example of how this works:\n\n```javascript\n// In your React component\nconst messages = useQuery(api.messages.list);\n// This automatically updates when messages change!\n```\n\nLet's start with a question: What do you think 'reactive' means in the context of a backend database? Take your best guess!"
-        : "Excellent choice! Let's learn how to build apps with Convex.\n\nWe'll start with the basics and work our way up to building real applications. Convex makes it incredibly easy to go from idea to deployed app.\n\nHere's how you start a new Convex project:\n\n```bash\nnpx create-convex@latest my-app\ncd my-app\nnpm run dev\n```\n\nFirst question: When starting a new Convex project, what's the very first command you would run? (Hint: it involves npm or npx)";
-
-    await addMessage({
-      sessionId,
-      role: "assistant",
-      content: welcomeMessage,
-    });
   };
 
-  const handleSendMessage = async () => {
-    if (!currentMessage.trim() || isLoading) return;
+  const handleSendMessage = async (
+    messageText?: string,
+    isVoice = false,
+    voiceCommand?: string
+  ) => {
+    const messageToSend = messageText || userMessage;
+    if (!messageToSend.trim() || isLoading) return;
+
+    // Get current session ID from state - this should be the active session
+    const currentSessionId = sessionId;
+    console.log(`📤 Sending message with session: ${currentSessionId}`);
 
     // Check for special "end" command
-    if (currentMessage.trim().toLowerCase() === "end") {
-      setShowCompletionPage(true);
+    if (messageToSend.trim().toLowerCase() === "end") {
+      // Log the end command for admin playground visibility
+      await addMessage({
+        sessionId: currentSessionId,
+        role: "user",
+        content: `Completed course early with "end" command on question ${(session?.currentQuestion || 0) + 1}`,
+        isVoiceMessage: isVoice,
+        voiceCommand: voiceCommand,
+      });
+
+      // Complete the current session
       await updateSession({
-        sessionId,
+        sessionId: currentSessionId,
         isCompleted: true,
         currentQuestion: session?.currentQuestion || 0,
-        totalQuestions: session?.totalQuestions || 15,
+        totalQuestions: dynamicTotalQuestions,
       });
+
+      setShowCompletionPage(true);
       return;
     }
 
     setIsLoading(true);
     try {
-      await generateResponse({
-        sessionId,
-        userMessage: currentMessage,
-      });
-      setCurrentMessage("");
+      // Add voice message tracking to the addMessage calls in the response generation functions
+      // For now, we'll override the addMessage call for voice messages
+      if (isVoice) {
+        await addMessage({
+          sessionId: currentSessionId,
+          role: "user",
+          content: messageToSend,
+          isVoiceMessage: true,
+          voiceCommand: voiceCommand,
+        });
+      }
+
+      // Use AgentFlow if enabled, otherwise use regular response generation
+      if (useAgentFlow) {
+        await generateResponseWithAgent({
+          sessionId: currentSessionId,
+          userMessage: messageToSend,
+        });
+      } else {
+        await generateResponse({
+          sessionId: currentSessionId,
+          userMessage: messageToSend,
+        });
+      }
+      setUserMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
+      throw error; // Re-throw error instead of fallback
     } finally {
       setIsLoading(false);
     }
@@ -156,19 +416,56 @@ export default function App() {
     }
   };
 
-  const handleSkipQuestion = async () => {
+  const handleSkipQuestion = async (isVoice = false) => {
     if (isLoading) return;
+
+    // Get current session ID from state - this should be the active session
+    const currentSessionId = sessionId;
+    console.log(`⏭️ Skipping question with session: ${currentSessionId}`);
 
     setIsLoading(true);
     try {
-      await generateResponse({
-        sessionId,
-        userMessage: "skip",
-      });
+      // Track voice skip commands
+      if (isVoice) {
+        await addMessage({
+          sessionId: currentSessionId,
+          role: "user",
+          content: "skip",
+          isVoiceMessage: true,
+          voiceCommand: "skip",
+        });
+      }
+
+      // Use AgentFlow if enabled, otherwise use regular response generation
+      if (useAgentFlow) {
+        await generateResponseWithAgent({
+          sessionId: currentSessionId,
+          userMessage: "skip",
+        });
+      } else {
+        await generateResponse({
+          sessionId: currentSessionId,
+          userMessage: "skip",
+        });
+      }
     } catch (error) {
       console.error("Error skipping question:", error);
+      throw error; // Re-throw error instead of fallback
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEndCourse = async () => {
+    if (!sessionId) return;
+
+    try {
+      await endCourse({
+        sessionId,
+      });
+      // The component will re-render when the session isCompleted state changes
+    } catch (error) {
+      console.error("Error ending course:", error);
     }
   };
 
@@ -179,21 +476,67 @@ export default function App() {
   };
 
   const resetCourse = async () => {
-    setShowInitialQuestions(true);
-    setShowCompletionPage(false);
-    setShowCardsMode(false);
-    badgeCountRef.current = 0;
-    previousQuestionRef.current = 0;
-    await updateSession({
-      sessionId,
-      currentQuestion: 0,
-      score: 0,
-      isCompleted: false,
-    });
-    // Clear messages by creating a new session
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    await createSession({ sessionId: newSessionId });
-    window.location.reload();
+    console.log("🔄 Starting course reset...");
+
+    try {
+      // Archive the current session with OLD session ID (if it exists)
+      if (sessionId && sessionId !== "") {
+        console.log(`🗂️ Archiving old session during reset: ${sessionId}`);
+        try {
+          await updateSession({
+            sessionId: sessionId, // Use OLD session ID for archiving
+            isCompleted: true,
+            currentQuestion: 99, // Mark as completed
+          });
+          console.log(`✅ Old session archived during reset: ${sessionId}`);
+        } catch (error) {
+          console.log(`⚠️ Could not archive old session during reset: ${error}`);
+          // Don't fail reset if archiving fails
+        }
+      }
+
+      // Clear localStorage and session state
+      localStorage.removeItem("convex-course-session");
+      setSessionId("");
+
+      // Reset all state variables to initial state
+      setShowInitialQuestions(true);
+      setShowCompletionPage(false);
+      setShowCardsMode(false);
+      setCourseType(null);
+      setUseAgentFlow(false);
+      setAgentThreadId(null);
+      setUserMessage("");
+      badgeCountRef.current = 0;
+      previousQuestionRef.current = 0;
+
+      // Stop any playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      setIsPlaying(false);
+      setCurrentlyPlayingMessageId(null);
+
+      // Stop any listening
+      if (recognitionRef.current && isListening) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      }
+
+      console.log("🔄 Reset complete - ready for course selection");
+    } catch (error) {
+      console.error("Error during reset:", error);
+      // Reset UI state even if archiving fails
+      localStorage.removeItem("convex-course-session");
+      setSessionId("");
+      setShowInitialQuestions(true);
+      setShowCompletionPage(false);
+      setShowCardsMode(false);
+      setCourseType(null);
+      setUseAgentFlow(false);
+      setAgentThreadId(null);
+    }
   };
 
   const copyToClipboard = async (text: string) => {
@@ -250,7 +593,50 @@ export default function App() {
     }
   }, [session?.isCompleted, showCardsMode]);
 
-  if (session === undefined) {
+  // Handle page refresh - if user refreshes while on completion page, clear session state
+  useEffect(() => {
+    if (session?.isCompleted && showInitialQuestions) {
+      // User refreshed on completion page or navigated back to start
+      // Clear the session ID so a new one will be created when they select a course
+      console.log("🔄 Page refresh detected on completed session - clearing for fresh start");
+      localStorage.removeItem("convex-course-session");
+      setSessionId("");
+    }
+  }, [session?.isCompleted, showInitialQuestions]);
+
+  // Handle session state based on session data
+  useEffect(() => {
+    if (!session || !sessionId) return;
+
+    // If session is completed, show completion page
+    if (session.isCompleted && !showCompletionPage) {
+      console.log("📋 Session completed - showing completion page");
+      setShowCompletionPage(true);
+      setShowCardsMode(false);
+      setShowInitialQuestions(false);
+      return;
+    }
+
+    // If session has course type and we're showing initial questions, update UI
+    if (session.courseType && showInitialQuestions && !session.isCompleted) {
+      console.log(`📚 Resuming session with course: ${session.courseType}`);
+      setShowInitialQuestions(false);
+      setCourseType(session.courseType);
+
+      // Set up AgentFlow state if session has agent thread
+      if (session.agentThreadId) {
+        setUseAgentFlow(true);
+        setAgentThreadId(session.agentThreadId);
+      }
+
+      // Show cards mode if appropriate
+      if (session.courseType === "build-apps-cards") {
+        setShowCardsMode(true);
+      }
+    }
+  }, [session, sessionId, showInitialQuestions, showCompletionPage]);
+
+  if (session === undefined && sessionId !== "") {
     return (
       <div className="min-h-screen bg-convex-cream flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -291,23 +677,19 @@ export default function App() {
             </h2>
             <p className="text-base sm:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed">
               Congratulations! You've successfully completed the{" "}
-              {session?.courseType === "how-convex-works"
-                ? "How Convex Works"
-                : session?.courseType === "build-apps-cards"
-                  ? "Building Apps with Convex (Cards)"
-                  : "Building Apps with Convex"}{" "}
+              {session?.courseType === "build-apps"
+                ? "Build Apps (Chat Mode)"
+                : "Build Apps (Cards Mode)"}
               course.
             </p>
             <div className="bg-convex-cream rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
               <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 Final Score: {session?.score || 0}/
-                {session?.courseType
-                  ? COURSE_SETTINGS[session.courseType as keyof typeof COURSE_SETTINGS]?.maxScore ||
-                    100
-                  : 100}
+                {session?.courseType ? courseSettings?.maxScore || 100 : 100}
               </div>
               <div className="text-sm sm:text-base text-gray-600">
-                Questions Completed: {session?.currentQuestion || 0}/{session?.totalQuestions || 10}
+                Questions Completed: {session?.currentQuestion || 0}/
+                {courseSettings?.totalQuestions || session?.totalQuestions || 10}
               </div>
             </div>
             <div className="space-y-4">
@@ -325,13 +707,7 @@ export default function App() {
                   className="text-convex-red hover:underline">
                   Read the Docs
                 </a>
-                <a
-                  href="https://github.com/waynesutton/learnconvex"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-convex-red hover:underline">
-                  Repo
-                </a>
+
                 <a
                   href="https://convex.dev/community"
                   target="_blank"
@@ -427,7 +803,7 @@ export default function App() {
         {/* Cards Mode */}
         {showCardsMode ? (
           <div className="flex-1 overflow-y-auto p-4">
-            <Cards sessionId={sessionId} />
+            <DuolingoCards sessionId={sessionId} />
           </div>
         ) : (
           <>
@@ -440,25 +816,11 @@ export default function App() {
                       Welcome to Learn Convex!
                     </h2>
                     <p className="text-gray-700 mb-6 sm:mb-8 text-center text-base sm:text-lg leading-relaxed">
-                      Choose your learning mode to get started with Convex, the backend for AI.
+                      Choose your learning mode to get started.
                     </p>
 
                     <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-8">
-                      {/* <div className="w-full md:w-72 p-6 md:p-8 bg-white rounded-lg flex flex-col items-center justify-center text-center">
-                    <div className="font-bold text-lg md:text-xl mb-3 text-gray-900">
-                      Learn how Convex works
-                    </div>
-                    <div className="text-sm text-gray-600 leading-relaxed mb-6">
-                      Understand the core concepts and architecture
-                    </div>
-                    <button
-                      onClick={() => handleCourseSelection("how-convex-works")}
-                      className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition-colors"
-                      style={{ borderRadius: "30px" }}>
-                      Start Course
-                    </button>
-                  </div> */}
-
+                      {/* Chat Mode */}
                       <div className="w-full md:w-72 p-6 md:p-8 bg-white border border-[#EEEEEE] rounded-lg flex flex-col items-center justify-center text-center">
                         <div className="font-bold text-lg md:text-xl mb-3 text-gray-900">
                           Chat Mode
@@ -466,13 +828,15 @@ export default function App() {
                         <div className="text-sm text-gray-600 leading-relaxed mb-6">
                           Interactive chat-based learning
                         </div>
-                        <button
-                          onClick={() => handleCourseSelection("build-apps")}
-                          className="from-33% group z-10 inline-flex rounded-full bg-gradient-to-br from-plum-p4 via-red-r3 via-90% to-yellow-y3 to-100% p-0.5 shadow-[0_2px_14px_rgba(111,0,255,0.25)] transition-shadow hover:shadow-[rgba(111,0,255,0.5)]">
-                          <span className="px-4 md:px-6 py-3 bg-black text-white rounded-full ring-2 ring-[#B72C57] text-sm md:text-base">
-                            Start Course
-                          </span>
-                        </button>
+                        <div className="space-y-3 w-full">
+                          <button
+                            onClick={() => handleCourseSelection("build-apps", true)}
+                            className="w-full from-33% group z-10 inline-flex rounded-full bg-gradient-to-br from-plum-p4 via-red-r3 via-90% to-yellow-y3 to-100% p-0.5 shadow-[0_2px_14px_rgba(111,0,255,0.25)] transition-shadow hover:shadow-[rgba(111,0,255,0.5)]">
+                            <span className="w-full px-4 md:px-6 py-3 bg-black text-white rounded-full ring-2 ring-[#B72C57] text-sm md:text-base">
+                              Start Course
+                            </span>
+                          </button>
+                        </div>
                       </div>
 
                       <div className="w-full md:w-72 p-6 md:p-8 bg-white border border-[#EEEEEE] rounded-lg flex flex-col items-center justify-center text-center">
@@ -560,15 +924,64 @@ export default function App() {
                       key={index}
                       className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-3xl rounded-lg px-4 py-3 ${
+                        className={`max-w-3xl rounded-lg px-4 py-3 relative group ${
                           message.role === "user"
                             ? "bg-convex-red text-white"
                             : "bg-white text-gray-900 border border-gray-200"
                         }`}>
                         {message.role === "user" ? (
-                          <div className="whitespace-pre-wrap">{message.content}</div>
+                          <div className="flex items-start justify-between">
+                            <div className="whitespace-pre-wrap flex-1">{message.content}</div>
+                            {message.isVoiceMessage && (
+                              <div className="ml-2 text-white/70">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M12 2C13.1 2 14 2.9 14 4V12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12V4C10 2.9 10.9 2 12 2M19 10V12C19 15.9 15.9 19 12 19S5 15.9 5 12V10H7V12C7 14.8 9.2 17 12 17S17 14.8 17 12V10H19Z" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
                         ) : (
-                          <MessageRenderer content={message.content} />
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <MessageRenderer content={message.content} />
+                            </div>
+                            <button
+                              onClick={() => handleTextToSpeech(message.content, index)}
+                              className="ml-3 mt-1 p-2 hover:bg-gray-100 rounded-full flex-shrink-0 transition-colors"
+                              title={
+                                isPlaying && currentlyPlayingMessageId === `message-${index}`
+                                  ? "Stop audio"
+                                  : "Read aloud"
+                              }
+                              disabled={
+                                isPlaying && currentlyPlayingMessageId !== `message-${index}`
+                              }>
+                              {isPlaying && currentlyPlayingMessageId === `message-${index}` ? (
+                                <svg
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="text-convex-red">
+                                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  className="text-gray-500 hover:text-convex-red">
+                                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -583,7 +996,10 @@ export default function App() {
                             alt="Convex"
                             className="animate-spin h-4 w-4"
                           />
-                          <span className="text-gray-600">Thinking...</span>
+                          <span className="text-gray-600">
+                            {useAgentFlow ? "AgentFlow thinking..." : "Thinking..."}
+                          </span>
+                          {useAgentFlow && <span className="text-purple-600">✨</span>}
                         </div>
                       </div>
                     </div>
@@ -599,32 +1015,60 @@ export default function App() {
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                   <div className="flex-1 relative">
                     <textarea
-                      value={currentMessage}
-                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      value={userMessage}
+                      onChange={(e) => setUserMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Type your response... (Type 'end' to complete the course)"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none text-sm sm:text-base"
+                      placeholder={
+                        isListening
+                          ? "Listening..."
+                          : "Type your response... (Type 'end' to complete the course or use voice)"
+                      }
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-black resize-none text-sm sm:text-base"
                       rows={1}
-                      disabled={isLoading}
+                      disabled={isLoading || isListening}
                     />
+                    {/* Voice Input Button */}
+                    <button
+                      onClick={isListening ? stopListening : startListening}
+                      disabled={isLoading}
+                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full transition-colors ${
+                        isListening
+                          ? "bg-red-500 text-white animate-pulse"
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                      }`}
+                      title={isListening ? "Stop listening" : "Start voice input"}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C13.1 2 14 2.9 14 4V12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12V4C10 2.9 10.9 2 12 2M19 10V12C19 15.9 15.9 19 12 19S5 15.9 5 12V10H7V12C7 14.8 9.2 17 12 17S17 14.8 17 12V10H19Z" />
+                      </svg>
+                    </button>
                   </div>
                   <div className="flex space-x-3 sm:space-x-3">
                     <button
-                      onClick={handleSkipQuestion}
+                      onClick={() => handleSkipQuestion()}
                       disabled={isLoading}
                       className="flex-1 sm:flex-none px-3 sm:px-4 py-3 bg-gray-300 text-gray-700 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                       style={{ borderRadius: "30px" }}>
                       Skip
                     </button>
                     <button
-                      onClick={handleSendMessage}
-                      disabled={!currentMessage.trim() || isLoading}
+                      onClick={() => handleSendMessage()}
+                      disabled={(!userMessage.trim() && !isListening) || isLoading}
                       className="flex-1 sm:flex-none px-4 sm:px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                       style={{ borderRadius: "30px" }}>
                       Send
                     </button>
                   </div>
                 </div>
+
+                {/* Voice Status */}
+                {isListening && (
+                  <div className="mt-2 text-center">
+                    <div className="inline-flex items-center space-x-2 text-sm text-red-600">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span>Listening... Say "end" or "skip" for voice commands</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -635,21 +1079,30 @@ export default function App() {
       {session && !showInitialQuestions && !showCardsMode && (
         <div className="bg-convex-cream px-4 py-2">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-gray-600 space-y-1 sm:space-y-0">
-            <div className="text-center sm:text-left">
-              Course:{" "}
-              {session.courseType === "how-convex-works"
-                ? "How Convex Works"
-                : session.courseType === "build-apps-cards"
-                  ? "Building Apps (Cards)"
-                  : "Building Apps"}
+            <div className="text-center sm:text-left flex items-center space-x-2">
+              <button
+                onClick={handleEndCourse}
+                disabled={session.isCompleted}
+                className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="End Course">
+                End Course
+              </button>
+              <span>
+                Course:{" "}
+                {session.courseType === "build-apps"
+                  ? "Build Apps (Chat Mode)"
+                  : "Build Apps (Cards Mode)"}
+              </span>
+              {useAgentFlow && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                  ✨ AgentFlow
+                </span>
+              )}
             </div>
             <div className="text-center sm:text-right">
-              Progress: {session.currentQuestion}/{session.totalQuestions || 10} | Score:{" "}
-              {session.score}/
-              {session.courseType
-                ? COURSE_SETTINGS[session.courseType as keyof typeof COURSE_SETTINGS]?.maxScore ||
-                  100
-                : 100}
+              Progress: {session.currentQuestion}/
+              {courseSettings?.totalQuestions || session?.totalQuestions || 10} | Score:{" "}
+              {session.score}/{session.courseType ? courseSettings?.maxScore || 100 : 100}
             </div>
           </div>
         </div>

@@ -1,263 +1,340 @@
-# Convex Learning Course App
+# ConvexCourse: Interactive Learning Platform
 
-A comprehensive interactive learning platform for mastering Convex.dev fundamentals and practical application development. This app provides two distinct learning paths: understanding how Convex works conceptually and hands-on application building.
+An AI-powered learning platform designed to teach developers how to build applications with Convex.dev through interactive lessons, voice integration, and comprehensive admin management tools.
 
-## 🚀 Production Ready & Type Safe
+## What ConvexCourse Does
 
-This app is **fully type-safe** and **deployment-ready** for Vercel with:
+ConvexCourse is a production-ready learning platform that makes Convex development accessible through two distinct learning modes:
 
-- ✅ **Complete Type Safety**: All Convex functions have proper argument and return validators
-- ✅ **Production Build**: Optimized build configuration with Vite and Convex integration
-- ✅ **Vercel Deployment**: Pre-configured with `vercel.json` and proper build commands
-- ✅ **Environment Variables**: Documented and configured for production deployment
-- ✅ **Error Handling**: Comprehensive error handling throughout the application
-- ✅ **TypeScript Strict Mode**: Enforced across all configurations for maximum reliability
+### 🎯 Core Learning Experience
 
-## What This App Is About
+**Chat Mode**: Interactive AI conversations that guide you through building real Convex applications
 
-This is an intelligent educational platform that teaches Convex.dev through interactive courses powered by advanced AI technology. The app features:
+- Real-time Q&A with AI instructor powered by OpenAI GPT-4o-mini
+- Documentation-enhanced responses using current Convex docs
+- Voice interaction with speech-to-text and text-to-speech capabilities
+- Progressive learning from basic setup to advanced patterns
 
-### 🎯 Two Learning Modes
+**Cards Mode**: Flashcard-style learning for quick concept reinforcement
 
-1. **"How Convex Works"** - Conceptual understanding of Convex fundamentals and architecture (10 questions)
-2. **"Build Apps"** - Practical development skills and workflows (7 questions)
+- Swipe-to-answer flashcards with immediate feedback
+- Bite-sized lessons perfect for mobile learning
+- Progress tracking with celebration animations
+- Admin-configurable question sets
 
-### 🤖 Smart AI Learning
+### 🚀 Key Features
 
-- Interactive AI instructor that adapts to your learning pace
-- Real-time feedback and scoring system
-- Code examples with syntax highlighting
-- Progress tracking through configurable question sets
-- **Randomized Question Order** - Each session presents questions in a unique order for varied learning experiences
-- **Smart Skip Handling** - Users can skip questions while still receiving explanations
+#### **AI-Powered Instruction**
 
-### ✨ Gamified Experience
+- **Documentation-Enhanced AI**: Responses powered by current Convex documentation for accuracy
+- **Context-Aware Learning**: AI understands your progress and adapts instruction accordingly
+- **Voice Integration**: Full speech-to-text input and text-to-speech output using ElevenLabs
+- **AgentFlow Support**: Enhanced AI with persistent conversation context and workflow management
 
-- Dynamic scoring system (0-100 points)
-- Celebration animations with confetti effects
-- Achievement badges for progress milestones
-- Engaging UI with modern black and white design
-- Branded thinking indicator with spinning Convex favicon
+#### **Dynamic Course Management**
 
-### 🔑 Key Features
+- **Real-time Configuration**: Admin-adjustable question counts, scoring, and difficulty levels
+- **Live Documentation Updates**: AI instruction updated with latest Convex best practices
+- **Session Persistence**: Automatic resume across browser sessions
+- **Progress Celebration**: Confetti animations and achievement badges
 
-- **Anonymous Authentication** - Easy sign-in with Convex Auth
-- **Real-time Sync** - Live chat interface powered by Convex reactivity
-- **Session Management** - Persistent learning progress with randomized question orders
-- **Learning Analytics** - Comprehensive stats page with course completion tracking
-- **Responsive Design** - Beautiful, production-ready interface
-- **Code Highlighting** - Syntax-highlighted code examples for better learning
-- **Multiple Learning Modes** - Chat mode and Cards mode for different learning preferences
+#### **Comprehensive Admin Tools**
 
-## Technical Stack
+- **Real-time Monitoring**: Live session tracking with message-level visibility
+- **Session Intervention**: Insert contextual hints or take over sessions manually
+- **Analytics Dashboard**: Usage statistics, completion rates, and cost tracking
+- **Bulk Operations**: Efficient management of multiple learning sessions
+- **Documentation Management**: Update AI knowledge base through admin interface
 
-This project is built with [Chef](https://chef.convex.dev) using [Convex](https://convex.dev) as its backend.
+#### **Voice-Enabled Learning**
 
-- **Frontend**: React 19 + Vite + TypeScript + TailwindCSS
-- **Backend**: Convex.dev with real-time database and type-safe functions
-- **AI Integration**: OpenAI GPT-4 for interactive course content
-- **Authentication**: Convex Auth with anonymous login
-- **UI Components**: Custom components with Tailwind styling
-- **Animations**: Canvas Confetti for celebrations
-- **Deployment**: Vercel with optimized Convex integration
+- **Speech Recognition**: Speak your answers instead of typing
+- **Audio Responses**: Listen to AI explanations with natural voice synthesis
+- **Voice Commands**: Use "skip", "end", and navigation commands
+- **Accessibility**: Enhanced learning for diverse accessibility needs
 
-## Project Structure
+#### **Advanced Features**
 
-```
-convexcourse/
-├── convex/                     # Backend Convex functions and configuration
-│   ├── _generated/            # Auto-generated Convex types and API
-│   ├── auth.config.ts         # Authentication configuration
-│   ├── auth.ts               # Auth setup and handlers (TYPE-SAFE)
-│   ├── course.ts             # Main course logic and AI integration (TYPE-SAFE)
-│   ├── http.ts              # HTTP routes configuration
-│   ├── router.ts            # Custom HTTP route definitions
-│   ├── schema.ts            # Database schema definitions
-│   ├── stats.ts             # Learning analytics and statistics queries (TYPE-SAFE)
-│   ├── questions.ts         # Question bank with randomization utilities
-│   └── tsconfig.json        # TypeScript config for Convex
-├── src/                      # Frontend React application
-│   ├── components/          # Reusable UI components
-│   │   ├── CodeBlock.tsx    # Syntax-highlighted code display
-│   │   ├── MessageRenderer.tsx # Chat message rendering
-│   │   └── Stats.tsx        # Learning statistics page
-│   ├── lib/                 # Utility libraries
-│   ├── App.tsx              # Main application component
-│   ├── AppRouter.tsx        # React Router setup
-│   ├── SignInForm.tsx       # Authentication form
-│   ├── SignOutButton.tsx    # Sign out functionality
-│   ├── index.css           # Global styles and Tailwind imports
-│   ├── main.tsx            # React app entry point
-│   ├── vite-env.d.ts       # Vite type definitions
-│   └── vite.config.ts      # Vite bundler configuration
-├── vercel.json              # Vercel deployment configuration
-├── components.json          # Shadcn/ui component configuration
-├── eslint.config.js        # ESLint configuration
-├── index.html              # HTML entry point
-├── package.json            # Dependencies and scripts (Deployment Ready)
-├── postcss.config.cjs      # PostCSS configuration
-├── setup.mjs               # Project setup script
-├── tailwind.config.js      # Tailwind CSS configuration
-├── tsconfig.app.json       # TypeScript config for app
-├── tsconfig.json           # Main TypeScript configuration
-├── tsconfig.node.json      # TypeScript config for Node.js
-└── vite.config.ts          # Vite bundler configuration
-```
+- **Document Search**: Upload and search through learning materials
+- **Token Analytics**: Track AI usage and costs
+- **Clerk Authentication**: Secure admin access with role-based permissions
+- **Mobile Optimized**: Responsive design works perfectly on all devices
 
-## Getting Started
+## Learning Content
+
+The platform teaches practical Convex development through hands-on examples:
+
+- **Project Setup**: `npx create-convex@latest` and initial configuration
+- **Schema Design**: Database table definitions and validation
+- **Query Functions**: Reading data with real-time subscriptions
+- **Mutation Functions**: Writing data with type safety
+- **Action Functions**: External API integration and serverless workflows
+- **Frontend Integration**: React hooks (`useQuery`, `useMutation`, `useAction`)
+- **Deployment**: Production deployment and environment management
+- **Best Practices**: Performance optimization and code organization
+
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn package manager
+- OpenAI API key for AI instruction
+- ElevenLabs API key for voice features (optional)
 
-### Installation & Development
+### Installation
 
-1. **Clone and install dependencies:**
+1. **Clone and install**
 
    ```bash
    git clone <repository-url>
-   cd convexcourse
+   cd convex-course
    npm install
    ```
 
-2. **Start development servers:**
+2. **Set up Convex**
+
+   ```bash
+   npx convex dev
+   ```
+
+3. **Configure environment variables**
+
+   ```bash
+   # Required
+   VITE_CONVEX_URL=your_convex_deployment_url
+   CONVEX_OPENAI_API_KEY=your_openai_api_key
+
+   # Optional - Voice features
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key
+
+   # Optional - Admin authentication
+   VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+   ```
+
+4. **Start learning**
 
    ```bash
    npm run dev
    ```
 
-   This runs both frontend (Vite) and backend (Convex) servers concurrently.
+   Visit `http://localhost:5173` and choose your learning mode!
 
-3. **Available Scripts:**
-   - `npm run dev` - Start both frontend and backend servers
-   - `npm run dev:frontend` - Start only the Vite frontend server
-   - `npm run dev:backend` - Start only the Convex backend server
-   - `npm run build` - Build for production (Vercel-ready)
-   - `npm run preview` - Preview production build locally
-   - `npm run lint` - Run TypeScript and build checks
+## Usage Guide
 
-## App Architecture
+### For Learners
 
-### Frontend (`src/`)
+1. **Choose Your Mode**
 
-The frontend is built with Vite and React, featuring a modern chat-style interface for the learning experience with full TypeScript support.
+   - **Chat Mode**: Conversational learning with AI instructor
+   - **Cards Mode**: Quick flashcard-style review
 
-### Backend (`convex/`)
+2. **Interactive Learning**
 
-The backend uses Convex for real-time functionality, with the main course logic handling AI interactions and progress tracking. **All functions are type-safe with proper validators.**
+   - Type responses or use voice input (click microphone icon)
+   - Get immediate feedback and explanations
+   - Progress through adaptive questioning
 
-## App Authentication
+3. **Voice Features**
 
-This app uses [Convex Auth](https://auth.convex.dev/) with Anonymous authentication for easy sign-in. You may wish to change this before deploying your app to production.
+   - Click microphone to speak answers
+   - Click speaker icon to hear AI responses
+   - Use voice commands: "skip", "end", navigation
 
-## Course Configuration
+4. **Track Progress**
+   - View real-time scores and completion progress
+   - Celebrate achievements with animations
+   - Resume sessions automatically
 
-The app supports configurable course settings in `convex/course.ts`:
+### For Administrators
 
-```typescript
-const COURSE_SETTINGS = {
-  "how-convex-works": {
-    totalQuestions: 10, // Adjustable
-    maxScore: 100,
-  },
-  "build-apps": {
-    totalQuestions: 7, // Adjustable
-    maxScore: 100,
-  },
-};
+Access the admin playground at `/playground` to:
+
+#### **Monitor Learning Sessions**
+
+- View all active and completed sessions in real-time
+- See live message exchanges and user progress
+- Track completion rates and learning outcomes
+
+#### **Session Intervention**
+
+- Insert contextual hints for struggling learners
+- Take over sessions for manual instruction
+- Edit or delete messages for content moderation
+
+#### **Configure Courses**
+
+- Adjust question counts and scoring systems
+- Update documentation links for AI accuracy
+- Manage course difficulty and content focus
+
+#### **Analytics & Insights**
+
+- Track usage patterns and popular features
+- Monitor AI token consumption and costs
+- Export data for reporting and analysis
+
+#### **Bulk Operations**
+
+- Archive completed sessions
+- Delete inactive or test sessions
+- Clear message history for privacy
+
+## Technical Architecture
+
+### Backend (Convex)
+
+- **Reactive Database**: Real-time synchronization across all components
+- **Type-Safe Functions**: Full TypeScript coverage with Convex validators
+- **AgentFlow Integration**: Enhanced AI with persistent context and workflows
+- **Serverless Architecture**: Automatic scaling and global edge distribution
+
+### Frontend (React + TypeScript)
+
+- **Modern React**: Hooks, suspense, and real-time updates
+- **Voice Integration**: Web Speech API + ElevenLabs synthesis
+- **Responsive Design**: Mobile-first with TailwindCSS
+- **Real-time UI**: Live updates via Convex reactive queries
+
+### AI & Voice
+
+- **OpenAI GPT-4o-mini**: Primary AI instruction engine
+- **ElevenLabs**: High-quality text-to-speech synthesis
+- **Documentation Context**: AI responses enhanced with current Convex docs
+- **AgentFlow**: Persistent conversation context and workflow management
+
+### Authentication & Security
+
+- **Clerk**: Production-ready authentication with admin roles
+- **Anonymous Learning**: No auth required for core learning experience
+- **Role-based Access**: Admin tools protected behind authentication
+- **Session Security**: Secure session management with intervention controls
+
+## API Configuration
+
+### Environment Variables
+
+**Required:**
+
+```env
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+CONVEX_OPENAI_API_KEY=sk-your-openai-key
 ```
 
-### Question Randomization
+**Optional:**
 
-Each learning session generates a unique randomized question order to ensure varied learning experiences:
+```env
+# Voice Features
+ELEVENLABS_API_KEY=your-elevenlabs-key
 
-- **Structured Question Bank** (`convex/questions.ts`) - Predefined questions with answers, explanations, and topic tags
-- **Session-Based Randomization** - Question order is randomized when a new session starts
-- **Consistent Learning Path** - Each user follows their randomized order throughout their session
-- **Course-Specific Questions** - Different question sets for conceptual vs. practical learning tracks
+# Admin Authentication
+VITE_CLERK_PUBLISHABLE_KEY=pk_your-clerk-key
+CLERK_SECRET_KEY=sk_your-clerk-secret
 
-This approach maintains the integrity of the "learn Convex journey" while providing fresh experiences for returning users.
+# AgentFlow (automatically detected)
+# No additional configuration needed
+```
 
-## Learning Analytics
+### Database Initialization
 
-The app includes a comprehensive statistics page at `/stats` that tracks:
+The platform automatically initializes required data on first run:
 
-- **Course Completion Metrics** - Total sessions started vs completed
-- **Scoring Analytics** - Average scores across all courses and by mode
-- **Learning Progress** - Questions answered, skipped, and estimated accuracy
-- **Course Mode Breakdown** - Usage distribution between Chat Mode, Cards Mode, and How Convex Works
-- **Recent Activity Feed** - Latest learning sessions with scores and progress
-- **Score Distribution** - Visual representation of score ranges across all users
+- Default course settings
+- Convex documentation links
+- Question banks
+- Admin configurations
 
-The stats page is publicly accessible and provides valuable insights into learning patterns and course effectiveness. Access it via the "Stats" link in the footer of any page.
+## Development
 
-## 🚀 Deploying to Vercel
-
-This app is pre-configured for seamless Vercel deployment following [Convex's Vercel deployment guide](https://docs.convex.dev/production/hosting/vercel).
-
-### Quick Deployment Steps:
-
-1. **Connect to Vercel**: Link your GitHub repository to Vercel
-2. **Set Environment Variables**:
-   - `CONVEX_DEPLOY_KEY` - Get from Convex Dashboard → Settings → Deploy Keys
-   - `CONVEX_OPENAI_API_KEY` - Your OpenAI API key
-3. **Deploy**: Vercel will automatically use the optimized build configuration
-
-### Build Configuration
-
-The app uses the recommended Vercel build command:
+### Local Development
 
 ```bash
-npx convex deploy --cmd 'npm run build'
+# Install dependencies
+npm install
+
+# Start Convex backend
+npx convex dev
+
+# Start frontend (in another terminal)
+npm run dev:frontend
+
+# Or start both together
+npm run dev
 ```
 
-This ensures both your Convex backend and React frontend are deployed together.
+### Building for Production
 
-## Environment Variables
+```bash
+# Build frontend
+npm run build
 
-Required for production deployment:
+# Deploy Convex functions
+npx convex deploy
+```
 
-- `CONVEX_DEPLOY_KEY`: Production deploy key from Convex Dashboard
-- `CONVEX_OPENAI_API_KEY`: OpenAI API key for AI course content
-- `CONVEX_URL`: Automatically set by Convex during deployment
+### Testing
 
-## Type Safety Features
+```bash
+# Type checking
+npm run lint
 
-This app implements comprehensive type safety:
+# Build verification
+npm run build
+```
 
-- **Convex Functions**: All queries, mutations, and actions have proper argument and return validators
-- **Database Schema**: Fully typed with Convex's schema validation
-- **Frontend Types**: Full TypeScript coverage with strict mode enabled
-- **API Integration**: Type-safe communication between frontend and backend
-- **Error Handling**: Proper error types and validation throughout
+## Deployment
 
-## Developing and Deploying Your App
+### Vercel (Frontend)
 
-Check out the [Convex docs](https://docs.convex.dev/) for more information on how to develop with Convex.
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
 
-- If you're new to Convex, the [Overview](https://docs.convex.dev/understanding/) is a good place to start
-- Check out the [Hosting and Deployment](https://docs.convex.dev/production/) docs for how to deploy your app
-- Read the [Best Practices](https://docs.convex.dev/understanding/best-practices/) guide for tips on how to improve your app further
-- For Vercel deployment specifically, see the [Vercel Guide](https://docs.convex.dev/production/hosting/vercel)
+### Convex (Backend)
 
-## HTTP API
+1. Set up Convex production deployment:
 
-User-defined HTTP routes are defined in the `convex/router.ts` file. We split these routes into a separate file from `convex/http.ts` to allow us to prevent the LLM from modifying the authentication routes.
+   ```bash
+   npx convex deploy --prod
+   ```
+
+2. Configure environment variables:
+   ```bash
+   npx convex env set CONVEX_OPENAI_API_KEY sk-your-key --prod
+   npx convex env set ELEVENLABS_API_KEY your-key --prod
+   ```
+
+## Key Differentiators
+
+- **No Auth Required**: Anonymous learning experience with optional admin authentication
+- **Voice-First Design**: Complete voice interaction capabilities for accessibility
+- **Real-time Admin Tools**: Live session monitoring and intervention capabilities
+- **Documentation-Enhanced AI**: Always current with latest Convex best practices
+- **Dual Learning Modes**: Chat conversations and flashcard-style learning
+- **AgentFlow Integration**: Persistent AI context and advanced workflow management
+- **Production Ready**: Comprehensive analytics, cost tracking, and scalable architecture
 
 ## Contributing
 
-This is a learning platform designed to teach Convex.dev concepts. Feel free to extend the courses, add new learning tracks, or improve the user experience.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-## Deployment Checklist
+Please see `files.md` for detailed architecture documentation.
 
-- ✅ All TypeScript errors resolved
-- ✅ All Convex functions have proper validators
-- ✅ Build process tested and working
-- ✅ Environment variables documented
-- ✅ Vercel configuration optimized
-- ✅ Production-ready error handling
-- ✅ Database schema validated
-- ✅ AI integration properly configured
+## Support
 
-# learnconvex
+- **Documentation**: See `files.md` for comprehensive technical details
+- **Issues**: Report bugs via GitHub issues
+- **Questions**: Join the Convex Discord community
+- **Updates**: Follow [@convex_dev](https://twitter.com/convex_dev) for latest features
+
+## License
+
+This project is open source. See LICENSE file for details.
+
+---
+
+**Built with ❤️ using Convex.dev** • Make something awesome!
